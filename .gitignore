@@ -1,0 +1,50 @@
+# IDEA Ignores #
+################
+*.iml
+*.ipr
+*.iws
+.idea/
+local.properties
+
+# Generic Android ignores #
+###########################
+bin/
+target
+gen/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code #
+###########
+.vscode
+
+### Apple ###
+.DS_Store
+
+# Gradle #
+.gradle
+
+# CodeGen #
+/openapi-generated
+/generated
+/build
+
+# local Configs
+application-sendgrid.yml
+application-local.yml
+application-docker.yml
+mise.local.toml
