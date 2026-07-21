@@ -32,10 +32,6 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
-  # Session
-  session:
-    store-type: redis
-
 # Actuator
 management:
   endpoints:

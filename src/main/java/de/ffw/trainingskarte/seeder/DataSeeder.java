@@ -45,10 +45,10 @@ public class DataSeeder {
             }
 
             if (vehicleRepository.count() == 0) {
-                vehicleRepository.save(new Vehicle("DLA 1", "Drehleiter", 2, 53.587, 10.044));
-                vehicleRepository.save(new Vehicle("CT 2/1", "C-Tragkraftspritzenlohnwagen", 2, 53.594, 9.990));
-                vehicleRepository.save(new Vehicle("TGL-B 4", "Tankgruppenlöschgruppenfahrzeug", 2, 53.552, 9.935));
-                vehicleRepository.save(new Vehicle("GW 7", "Gerätewagen", 1, 53.460, 9.983));
+                vehicleRepository.save(new Vehicle("HLF 20/1", "HLF 20", 2, 53.587, 10.044));
+                vehicleRepository.save(new Vehicle("DLK 12/1", "DLK 23/12", 2, 53.594, 9.990));
+                vehicleRepository.save(new Vehicle("TLF 3/1", "TLF 3000", 2, 53.552, 9.935));
+                vehicleRepository.save(new Vehicle("MTW 1/1", "MTW", 1, 53.460, 9.983));
                 log.info("4 Fahrzeuge fuer Hamburger Feuerwachen angelegt.");
             }
         };

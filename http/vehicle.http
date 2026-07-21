@@ -1,0 +1,41 @@
+### API requests for ff-trainingskarte
+# Run with vscode-rest-client or similar tool
+
+@host = http://localhost:8080
+
+### List all vehicles (GET) → 200 OK
+GET {{host}}/api/vehicles
+
+### Create a vehicle (POST) → 201 CREATED, ADMIN required
+### Request body: callsign (unique), type, status
+POST {{host}}/api/vehicles
+Content-Type: application/json
+
+{
+  "callsign": "ELW-HH-1101",
+  "type": "ELW 1",
+  "status": 1
+}
+
+### Update a vehicle (PUT) → 200 OK, ADMIN required
+PUT {{host}}/api/vehicles/1
+Content-Type: application/json
+
+{
+  "callsign": "ELW-HH-1102",
+  "type": "ELW 1",
+  "status": 0
+}
+
+### Update vehicle position (PUT) → 200 OK, ADMIN required
+### Coordinates must be within Hamburg area: lat [53.3–53.8], lng [9.6–10.4]
+PUT {{host}}/api/vehicles/1/position
+Content-Type: application/json
+
+{
+  "lat": 53.5511,
+  "lng": 9.9937
+}
+
+### Delete a vehicle (DELETE) → 204 No Content, ADMIN required
+DELETE {{host}}/api/vehicles/1

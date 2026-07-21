@@ -1,0 +1,20 @@
+### Authentication requests for ff-trainingskarte
+# Login is handled via Spring Security form login (Thymeleaf UI)
+# Credentials: admin / admin (ADMIN role), viewer / viewer (VIEWER role if seeded)
+
+@host = http://localhost:8080
+
+### GET /login – render login page (public)
+GET {{host}}/login
+
+### POST /login – submit credentials (public, sets session cookie on success)
+### Redirects to / on successful authentication
+POST {{host}}/login
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=admin
+
+### POST /logout – end session (authenticated required)
+### Redirects to /login?logout after logout completes
+POST {{host}}/logout
+

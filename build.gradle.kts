@@ -37,14 +37,15 @@ dependencies {
     // Security
     implementation("org.springframework.boot:spring-boot-starter-security")
     // Redis + Session
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("org.springframework.session:spring-session-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-session-data-redis")
 
     // Actuator
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
