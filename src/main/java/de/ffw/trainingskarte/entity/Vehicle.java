@@ -43,6 +43,7 @@ public class Vehicle {
         this.status = status;
         this.lat = lat;
         this.lng = lng;
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public Long getId() {
