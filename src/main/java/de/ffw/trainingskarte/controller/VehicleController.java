@@ -1,6 +1,7 @@
 package de.ffw.trainingskarte.controller;
 
 import de.ffw.trainingskarte.controller.dto.PositionRequest;
+import de.ffw.trainingskarte.controller.dto.StatusChangeRequest;
 import de.ffw.trainingskarte.controller.dto.VehicleRequest;
 import de.ffw.trainingskarte.entity.Vehicle;
 import de.ffw.trainingskarte.repository.VehicleRepository;
@@ -8,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -100,10 +102,30 @@ public class VehicleController {
         return ResponseEntity.ok(vehicle);
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody StatusChangeRequest request) {
+        if (!isValidStatus(request.status())) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Ungueltiger Statuswert. Erlaubt: 1, 2, 3, 4, 6"));
+        }
+
+        Vehicle vehicle = vehicleRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vehicle not found: " + id));
+
+        vehicle.setStatus(request.status());
+        vehicle.setUpdatedAt(OffsetDateTime.now());
+        vehicle = vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(vehicle);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Secured("ROLE_ADMIN")
     public void delete(@PathVariable Long id) {
         vehicleRepository.deleteById(id);
+    }
+
+    private static boolean isValidStatus(int status) {
+        return Set.of(1, 2, 3, 4, 6).contains(status);
     }
 }

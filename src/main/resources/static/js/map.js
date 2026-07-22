@@ -9,11 +9,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var statusLabels = {
         1: 'Frei uber Funk',
-        2: 'Frei auf Wache',
+        2: 'Freи auс Wache',
         3: 'Einsatz uebernommen',
         4: 'Am Einsatzort',
         6: 'Ausser Dienst'
     };
+
+    var allStatusCodes = [1, 2, 3, 4, 6];
+
+    function getCsrfToken() {
+        var name = 'XSRF-TOKEN';
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
     function getStatusColor(status) {
         if (status === 1 || status === 2) return '#2ecc71';
@@ -32,11 +50,38 @@ document.addEventListener('DOMContentLoaded', function () {
         return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
     }
 
-    function buildPopup(vehicle) {
-        return '<b>' + vehicle.callsign + '</b><br/>' +
-            vehicle.type + '<br/>' +
-            '<i>Status:</i> ' + (statusLabels[vehicle.status] || vehicle.status) + '<br/>' +
-            '<i>Letzte Aktualisierung:</i> ' + formatUpdatedAt(vehicle.updatedAt);
+    function changeStatus(vehicleId, newStatus) {
+        var csrfToken = getCsrfToken();
+        fetch('/api/vehicles/' + vehicleId + '/status', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-XSRF-TOKEN': csrfToken || ''
+            },
+            body: JSON.stringify({ status: newStatus })
+        }).then(function (response) {
+            if (!response.ok) {
+                console.error('Status change failed with status:', response.status);
+            }
+        }).catch(function (err) {
+            console.error('Status change failed:', err);
+        });
+    }
+
+    function createPopupContent(vehicleId, vehicleStatus) {
+        var html = '<b>' + vehicle.callsign + '</b><br/>';
+        html += vehicle.type + '<br/>';
+        html += '<i>Status:</i> ' + (statusLabels[vehicle.status] || vehicle.status) + '<br/>';
+        html += '<i>Letzte Aktualisierung:</i> ' + formatUpdatedAt(vehicle.updatedAt);
+        html += '<hr/>';
+
+        for (var i = 0; i < allStatusCodes.length; i++) {
+            var code = allStatusCodes[i];
+            var activeClass = vehicle.status === code ? ' status-active' : '';
+            html += '<button class="status-btn' + activeClass + '" data-vehicle-id="' + vehicleId + '" data-status="' + code + '">' + statusLabels[code] + '</button><br/>';
+        }
+
+        return html;
     }
 
     function updateMap(vehicles) {
@@ -47,17 +92,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!markers[v.id]) {
                 markers[v.id] = L.circleMarker([v.lat, v.lng], {
-                    radius: 8,
+                    radius: 9,
                     color: getStatusColor(v.status),
                     fillColor: getStatusColor(v.status),
                     fillOpacity: 0.7
                 });
-                markers[v.id].bindPopup(buildPopup(v));
+                markers[v.id].bindPopup(createPopupContent(v));
                 markers[v.id].addTo(map);
             } else {
                 markers[v.id].setLatLng([v.lat, v.lng]);
                 markers[v.id].setStyle({ color: getStatusColor(v.status), fillColor: getStatusColor(v.status) });
-                markers[v.id].setPopupContent(buildPopup(v));
+                markers[v.id].setPopupContent(createPopupContent(v));
             }
         });
 
@@ -67,7 +112,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 delete markers[id];
             }
         });
+
+    function handleStatusClick(event) {
+        var target = event.target;
+        if (!(target.matches && !target.matches('.status-btn')) return;
+
+        if (!target.classList.contains('status-btn')) return;
+
+        var vehicleId = parseInt(target.getAttribute('data-vehicle-id'));
+        var newStatus = parseInt(target.getAttribute('data-status'));
+
+        changeStatus(vehicleId, newStatus);
     }
+
+    document.addEventListener('click', handleStatusClick);
+
 
     function fetchVehicles() {
         fetch('/api/vehicles')
