@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Fahrzeuge - Verwaltung</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body>
+    <div class="page-header">
+        <h1>Fahrzeuge verwalten</h1>
+        <a href="/map">&larr; Karte anzeigen</a>
+    </div>
+    <div class="container">
+        <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
+        <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
+
+        <div class="form-section">
+            <h2>Neues Fahrzeug anlegen</h2>
+            <form method="post" th:action="@{/admin/vehicles/create}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="callsign">Funkrufname</label>
+                        <input type="text" id="callsign" name="callsign" required placeholder="z.B. H1-TL-61" />
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Kategorie</label>
+                        <select id="type" name="type" required>
+                            <option th:each="t : ${vehicleTypes}" th:value="${t}" th:text="${t}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" required>
+                            <option th:each="e : ${statusLabels}" th:value="${e.key}" th:text="${e.value}"></option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Anlegen</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Funkrufname</th>
+                    <th>Kategorie</th>
+                    <th>Status</th>
+                    <th>Aenderungen</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="v : ${vehicles}">
+                    <td><strong th:text="${v.callsign}"></strong></td>
+                    <td th:text="${v.type}"></td>
+                    <td th:text="${#strings.defaultString(#maps.get(statusLabels, v.status), v.status)}"></td>
+                    <td th:text="${#temporals.format(v.updatedAt, 'dd.MM.yyyy HH:mm')}"></td>
+                    <td class="actions">
+                        <a th:href="@{/admin/vehicles/{id}/edit(id=${v.id})}" class="btn btn-edit btn-small">Bearbeiten</a>
+                        <form method="post" th:action="@{/admin/vehicles/{id}/delete(id=${v.id})}"
+                               style="display:inline;" class="confirm-form"
+                               onsubmit="return confirm('Fahrzeug wirklich loeschen?')">
+                            <button type="submit">Loeschen</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

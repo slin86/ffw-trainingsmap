@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Nutzer - Verwaltung</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body>
+    <div class="page-header">
+        <h1>Nutzer verwalten</h1>
+        <a href="/admin/vehicles">&rarr; Fahrzeuge</a>
+        <a href="/map">&rarr; Karte anzeigen</a>
+    </div>
+    <div class="container">
+        <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
+        <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
+
+        <div class="form-section">
+            <h2>Neuen Nutzer anlegen</h2>
+            <form method="post" th:action="@{/admin/users/create}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Benutzername</label>
+                        <input type="text" id="username" name="username" required placeholder="z.B. max.mustermann" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Passwort</label>
+                        <input type="password" id="password" name="password" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Rolle</label>
+                        <select id="role" name="role" required>
+                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Anlegen</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Benutzername</th>
+                    <th>Rolle</th>
+                    <th>Status</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="u : ${users}">
+                    <td><strong th:text="${u.username}"></strong></td>
+                    <td th:text="${u.role}"></td>
+                    <td th:text="${u.enabled} ? 'Aktiv' : 'Deaktiviert'"></td>
+                    <td class="actions">
+                        <form method="post" th:action="@{/admin/users/{id}/toggle(id=${u.id})}"
+                              style="display:inline;" class="confirm-form">
+                            <input type="hidden" name="_method" value="POST" />
+                            <button type="submit" th:text="${u.enabled} ? 'Deaktivieren' : 'Aktivieren'"></button>
+                        </form>
+                        <form method="post" th:action="@{/admin/users/{id}(id=${u.id})}"
+                              style="display:inline;" class="confirm-form"
+                              th:if="${u.username != currentUsername}"
+                              onsubmit="return confirm('Nutzer wirklich loeschen?')">
+                            <input type="hidden" name="_method" value="DELETE" />
+                            <button type="submit">Loeschen</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

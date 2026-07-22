@@ -33,6 +33,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/error").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/vehicles/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/vehicles/**").hasRole("ADMIN")

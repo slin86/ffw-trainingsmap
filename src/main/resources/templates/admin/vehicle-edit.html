@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Fahrzeug bearbeiten - ' + ${vehicle.callsign}"></title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="page-header">
+        <h1 th:text="'Fahrzeug bearbeiten: ' + ${vehicle.callsign}"></h1>
+        <a href="/admin/vehicles">&larr; Zurueck zur Liste</a>
+    </div>
+    <div class="container">
+        <form method="post" th:action="@{/admin/vehicles/{id}(id=${vehicle.id})}" id="editForm">
+            <input type="hidden" id="lat" name="lat" th:value="${vehicle.lat}" />
+            <input type="hidden" id="lng" name="lng" th:value="${vehicle.lng}" />
+
+            <div class="form-section">
+                <h2>Fahrzeugdaten</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="callsign">Funkrufname</label>
+                        <input type="text" id="callsign" name="callsign" required
+                               th:value="${vehicle.callsign}" placeholder="z.B. H1-TL-61" />
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Kategorie</label>
+                        <select id="type" name="type" required>
+                            <option th:each="t : ${vehicleTypes}"
+                                    th:value="${t}" th:text="${t}"
+                                    th:selected="${t == vehicle.type}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select id="status" name="status" required>
+                            <option th:each="e : ${statusLabels}"
+                                    th:value="${e.key}" th:text="${e.value}"
+                                    th:selected="${e.key == vehicle.status}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Position (auf der Karte klicken)</h2>
+                <div id="position-map"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Speichern</button>
+        </form>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var lat = /*[[${vehicle.lat}]]*/ 53.5511;
+            var lng = /*[[${vehicle.lng}]]*/ 9.9937;
+
+            var map = L.map('position-map').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+            marker.on('dragend', function(e) {
+                var pos = e.target.getLatLng();
+                document.getElementById('lat').value = pos.lat;
+                document.getElementById('lng').value = pos.lng;
+            });
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                document.getElementById('lat').value = e.latlng.lat;
+                document.getElementById('lng').value = e.latlng.lng;
+            });
+
+            var form = document.getElementById('editForm');
+            form.addEventListener('submit', function() {
+                lat = parseFloat(document.getElementById('lat').value);
+                lng = parseFloat(document.getElementById('lng').value);
+                document.getElementById('lat').value = lat.toFixed(6);
+                document.getElementById('lng').value = lng.toFixed(6);
+            });
+        });
+    </script>
+</body>
+</html>
