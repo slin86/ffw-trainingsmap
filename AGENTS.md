@@ -42,6 +42,14 @@ Training-Tool fur die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf e
 - [x] `Vehicle.getStatusLabel()` fuers Template
 
 ## Noch offen
-
+- M5: Statuswechsel via Marker-Popup (VIEWER + ADMIN), PUT /api/vehicles/{id}/status
+- M6: Deployment in k3s (Manifeste, InfisicalSecret /feuerwehr, Ingress karte.home.lan)
+- Kein Echtzeit-Push (SSE/WebSockets): 10s-Polling ist eine bewusste Entscheidung
 - CI/CD Pipeline
 - Dockerfile fur Produktivdeployment
+
+## Guardrails
+- Boot 4: Autoconfiguration NUR via spring-boot-starter-<tech>. Raw dependencies scheitern lautlos.
+- Jede Aenderung braucht einen beobachtbaren Abnahme-Check (Logzeile, Cookie-Name, HTTP-Status) - "kompiliert" beweist nichts.
+- Keine neuen Dependencies, Packages oder Architektur-Mechanismen ohne expliziten Auftrag im Prompt.
+- Scope: Nur die im Prompt genannten Deliverables. Verbesserungsideen -> als Vorschlag ans Ende der Antwort, nicht umsetzen.
