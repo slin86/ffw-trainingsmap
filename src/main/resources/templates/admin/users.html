@@ -8,8 +8,8 @@
 <body>
     <div class="page-header">
         <h1>Nutzer verwalten</h1>
-        <a href="/admin/vehicles">&rarr; Fahrzeuge</a>
-        <a href="/map">&rarr; Karte anzeigen</a>
+        <a th:href="@{/admin/vehicles}">Fahrzeugverwaltung</a>
+        <a th:href="@{/}">&rarr; Karte anzeigen</a>
     </div>
     <div class="container">
         <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>

@@ -97,4 +97,15 @@ public class Vehicle {
     public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public String getStatusLabel() {
+        return switch (status) {
+            case 1 -> "Frei uber Funk";
+            case 2 -> "Frei auf Wache";
+            case 3 -> "Einsatz ubernommen";
+            case 4 -> "Am Einsatzort";
+            case 6 -> "Ausser Dienst";
+            default -> String.valueOf(status);
+        };
+    }
 }

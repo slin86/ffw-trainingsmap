@@ -8,7 +8,8 @@
 <body>
     <div class="page-header">
         <h1>Fahrzeuge verwalten</h1>
-        <a href="/map">&larr; Karte anzeigen</a>
+        <a th:href="@{/}">&larr; Karte anzeigen</a>
+        <a th:href="@{/admin/users}">Benutzerverwaltung</a>
     </div>
     <div class="container">
         <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
@@ -53,7 +54,7 @@
                 <tr th:each="v : ${vehicles}">
                     <td><strong th:text="${v.callsign}"></strong></td>
                     <td th:text="${v.type}"></td>
-                    <td th:text="${#strings.defaultString(#maps.get(statusLabels, v.status), v.status)}"></td>
+                    <td th:text="${v.getStatusLabel()}"></td>
                     <td th:text="${#temporals.format(v.updatedAt, 'dd.MM.yyyy HH:mm')}"></td>
                     <td class="actions">
                         <a th:href="@{/admin/vehicles/{id}/edit(id=${v.id})}" class="btn btn-edit btn-small">Bearbeiten</a>

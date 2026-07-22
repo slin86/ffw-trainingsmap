@@ -1,18 +1,14 @@
 package de.ffw.trainingskarte.controller;
 
 import de.ffw.trainingskarte.entity.Vehicle;
-import de.ffw.trainingskarte.repository.AppUserRepository;
 import de.ffw.trainingskarte.repository.VehicleRepository;
 import jakarta.servlet.http.HttpSession;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,11 +24,9 @@ public class AdminVehicleController {
     static final int[] STATUSES = new int[]{1, 2, 3, 4, 6};
 
     private final VehicleRepository vehicleRepository;
-    private final AppUserRepository appUserRepository;
 
-    public AdminVehicleController(VehicleRepository vehicleRepository, AppUserRepository appUserRepository) {
+    public AdminVehicleController(VehicleRepository vehicleRepository) {
         this.vehicleRepository = vehicleRepository;
-        this.appUserRepository = appUserRepository;
     }
 
     String getStatusLabel(int status) {
@@ -56,6 +50,11 @@ public class AdminVehicleController {
         if (flashMsg != null) {
             model.addAttribute("flashMessage", flashMsg);
             session.removeAttribute("flashMessage");
+        }
+        String flashErr = (String) session.getAttribute("flashError");
+        if (flashErr != null) {
+            model.addAttribute("flashError", flashErr);
+            session.removeAttribute("flashError");
         }
         return "admin/vehicles";
     }
@@ -100,7 +99,7 @@ public class AdminVehicleController {
         var existing = vehicleRepository.findByCallsign(callsign);
         if (existing.isPresent() && !existing.get().getId().equals(id)) {
             session.setAttribute("flashError", "Funkrufname '" + callsign + "' existiert bereits");
-            return "redirect:/admin/vehicles";
+            return "redirect:/admin/vehicles/" + id + "/edit";
         }
 
         vehicle.setCallsign(callsign);
