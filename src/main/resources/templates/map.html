@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>FF Trainingskarte</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #d32f2f; color: #fff; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.25rem; }
+        .header-right { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+        .header a { color: #ffcdd2; text-decoration: none; }
+        .header a:hover { color: #fff; }
+        .header button { background: transparent; border: 1px solid #ffcdd2; color: #ffcdd2; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        .header button:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: #fff; }
+        #map { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>FF Trainingskarte</h1>
+        <div class="header-right">
+            <span th:if="${isAdmin}" style="display:none;"></span>
+            <a th:if="${isAdmin}" href="/admin/vehicles">Verwaltung</a>
+            <span>Angemeldet als <strong th:text="${username}"></strong></span>
+            <form th:action="@{/logout}" method="post" style="margin:0">
+                <button type="submit">Abmelden</button>
+            </form>
+        </div>
+    </div>
+    <div id="map"></div>
+    <script src="/js/map.js"></script>
+</body>
+</html>
