@@ -8,29 +8,29 @@ document.addEventListener('DOMContentLoaded', function () {
     var markers = {};
 
     var statusLabels = {
-        1: 'Frei uber Funk',
-        2: 'Freи auс Wache',
-        3: 'Einsatz uebernommen',
+        1: 'Frei\u00fcber Funk',
+        2: 'Frei auf Wache',
+        3: 'Einsatz\u00fcbernommen',
         4: 'Am Einsatzort',
-        6: 'Ausser Dienst'
+        6: '\u00c4u\u00dfer Dienst'
     };
 
     var allStatusCodes = [1, 2, 3, 4, 6];
 
     function getCsrfToken() {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        if (meta) return meta.getAttribute('content');
         var name = 'XSRF-TOKEN';
-        var cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             var cookies = document.cookie.split(';');
             for (var i = 0; i < cookies.length; i++) {
                 var cookie = cookies[i].trim();
                 if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+                    return decodeURIComponent(cookie.substring(name.length + 1));
                 }
             }
         }
-        return cookieValue;
+        return '';
     }
 
     function getStatusColor(status) {
@@ -56,19 +56,29 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-XSRF-TOKEN': csrfToken || ''
+                'X-XSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({ status: newStatus })
         }).then(function (response) {
             if (!response.ok) {
                 console.error('Status change failed with status:', response.status);
+                return;
+            }
+            return response.json();
+        }).then(function (updatedVehicle) {
+            if (updatedVehicle && markers[vehicleId]) {
+                markers[vehicleId].setStyle({
+                    color: getStatusColor(updatedVehicle.status),
+                    fillColor: getStatusColor(updatedVehicle.status)
+                });
+                markers[vehicleId].setPopupContent(createPopupContent(updatedVehicle));
             }
         }).catch(function (err) {
             console.error('Status change failed:', err);
         });
     }
 
-    function createPopupContent(vehicleId, vehicleStatus) {
+    function createPopupContent(vehicle) {
         var html = '<b>' + vehicle.callsign + '</b><br/>';
         html += vehicle.type + '<br/>';
         html += '<i>Status:</i> ' + (statusLabels[vehicle.status] || vehicle.status) + '<br/>';
@@ -78,11 +88,15 @@ document.addEventListener('DOMContentLoaded', function () {
         for (var i = 0; i < allStatusCodes.length; i++) {
             var code = allStatusCodes[i];
             var activeClass = vehicle.status === code ? ' status-active' : '';
-            html += '<button class="status-btn' + activeClass + '" data-vehicle-id="' + vehicleId + '" data-status="' + code + '">' + statusLabels[code] + '</button><br/>';
+            html += '<button class="status-btn' + activeClass + '" onclick="window.changeMarkerStatus(' + vehicle.id + ', ' + code + ');" data-vehicle-id="' + vehicle.id + '" data-status="' + code + '">' + statusLabels[code] + '</button><br/>';
         }
 
         return html;
     }
+
+    window.changeMarkerStatus = function(vehicleId, newStatus) {
+        changeStatus(vehicleId, newStatus);
+    };
 
     function updateMap(vehicles) {
         var currentIds = {};
@@ -112,21 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 delete markers[id];
             }
         });
-
-    function handleStatusClick(event) {
-        var target = event.target;
-        if (!(target.matches && !target.matches('.status-btn')) return;
-
-        if (!target.classList.contains('status-btn')) return;
-
-        var vehicleId = parseInt(target.getAttribute('data-vehicle-id'));
-        var newStatus = parseInt(target.getAttribute('data-status'));
-
-        changeStatus(vehicleId, newStatus);
     }
-
-    document.addEventListener('click', handleStatusClick);
-
 
     function fetchVehicles() {
         fetch('/api/vehicles')

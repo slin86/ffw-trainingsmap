@@ -1,5 +1,11 @@
 package de.ffw.trainingskarte.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 import de.ffw.trainingskarte.entity.Vehicle;
 import de.ffw.trainingskarte.repository.AppUserRepository;
 import de.ffw.trainingskarte.repository.VehicleRepository;
@@ -16,12 +22,6 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(VehicleController.class)
 @Import(de.ffw.trainingskarte.config.SecurityConfig.class)
@@ -135,5 +135,85 @@ class VehicleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"callsign\":\"NEW 1\",\"type\":\"HLF 20\",\"status\":1}"))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updatePositionAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(put("/api/vehicles/1/position")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"lat\":53.55,\"lng\":9.99}"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateStatusAsViewerValidReturnsOk() throws Exception {
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(put("/api/vehicles/1/status")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":3}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(3));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateStatusAsAdminValidReturnsOk() throws Exception {
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(put("/api/vehicles/1/status")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":6}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(6));
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateStatusInvalidValueReturnsBadRequest() throws Exception {
+        mockMvc.perform(put("/api/vehicles/1/status")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":5}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateStatusZeroReturnsBadRequest() throws Exception {
+        mockMvc.perform(put("/api/vehicles/1/status")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":0}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateStatusNegativeReturnsBadRequest() throws Exception {
+        mockMvc.perform(put("/api/vehicles/1/status")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":-1}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").exists());
+    }
+
+    @Test
+    void updateStatusWithoutAuthRedirectsToLogin() throws Exception {
+        mockMvc.perform(put("/api/vehicles/1/status")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"status\":2}"))
+            .andExpect(status().is3xxRedirection());
     }
 }
