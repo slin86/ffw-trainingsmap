@@ -1,0 +1,12 @@
+# Production profile
+spring:
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    root: INFO
+    de.ffw.trainingskarte: WARN

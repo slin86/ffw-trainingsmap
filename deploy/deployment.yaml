@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ff-trainingskarte
+  namespace: feuerwehr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ff-trainingskarte
+  template:
+    metadata:
+      labels:
+        app: ff-trainingskarte
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/slin86/ff-trainingskarte:v0.1.0
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - secretRef:
+                name: feuerwehr-db
+            - configMapRef:
+                name: ff-trainingskarte-config
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15

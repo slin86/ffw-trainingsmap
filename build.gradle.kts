@@ -38,6 +38,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     // Redis + Session
     implementation("org.springframework.boot:spring-boot-starter-session-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
     // Actuator
     implementation("org.springframework.boot:spring-boot-starter-actuator")
