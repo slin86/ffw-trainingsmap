@@ -8,30 +8,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var markers = {};
 
     var statusLabels = {
-        1: 'Frei\u00fcber Funk',
+        1: 'Frei über Funk',
         2: 'Frei auf Wache',
-        3: 'Einsatz\u00fcbernommen',
+        3: 'Einsatz übernommen',
         4: 'Am Einsatzort',
-        6: '\u00c4u\u00dfer Dienst'
+        6: 'Außer Dienst'
     };
 
     var allStatusCodes = [1, 2, 3, 4, 6];
-
-    function getCsrfToken() {
-        var meta = document.querySelector('meta[name="_csrf"]');
-        if (meta) return meta.getAttribute('content');
-        var name = 'XSRF-TOKEN';
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    return decodeURIComponent(cookie.substring(name.length + 1));
-                }
-            }
-        }
-        return '';
-    }
 
     function getStatusColor(status) {
         if (status === 1 || status === 2) return '#2ecc71';
@@ -51,13 +35,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function changeStatus(vehicleId, newStatus) {
-        var csrfToken = getCsrfToken();
+        var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        var headers = { 'Content-Type': 'application/json' };
+        headers[header] = token;
+
         fetch('/api/vehicles/' + vehicleId + '/status', {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-XSRF-TOKEN': csrfToken
-            },
+            headers: headers,
             body: JSON.stringify({ status: newStatus })
         }).then(function (response) {
             if (!response.ok) {
