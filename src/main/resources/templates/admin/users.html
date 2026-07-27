@@ -58,11 +58,10 @@
                             <input type="hidden" name="_method" value="POST" />
                             <button type="submit" th:text="${u.enabled} ? 'Deaktivieren' : 'Aktivieren'"></button>
                         </form>
-                        <form method="post" th:action="@{/admin/users/{id}(id=${u.id})}"
+                        <form method="post" th:action="@{/admin/users/{id}/delete(id=${u.id})}"
                               style="display:inline;" class="confirm-form"
                               th:if="${u.username != currentUsername}"
                               onsubmit="return confirm('Nutzer wirklich loeschen?')">
-                            <input type="hidden" name="_method" value="DELETE" />
                             <button type="submit">Loeschen</button>
                         </form>
                     </td>

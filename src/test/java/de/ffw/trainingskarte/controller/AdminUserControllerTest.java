@@ -155,7 +155,7 @@ class AdminUserControllerTest {
     void deleteAsAdminReturnsRedirect() throws Exception {
         when(appUserRepository.findById(2L)).thenReturn(Optional.of(testUser));
 
-        mockMvc.perform(delete("/admin/users/2")
+        mockMvc.perform(post("/admin/users/2/delete")
                 .with(csrf()))
             .andExpect(status().is3xxRedirection());
     }
@@ -166,7 +166,7 @@ class AdminUserControllerTest {
         AppUser selfUser = new AppUser("viewer", "$2a$encoded", "ADMIN", true);
         when(appUserRepository.findById(2L)).thenReturn(Optional.of(selfUser));
 
-        mockMvc.perform(delete("/admin/users/2")
+        mockMvc.perform(post("/admin/users/2/delete")
                 .with(csrf()))
             .andExpect(status().is3xxRedirection());
     }

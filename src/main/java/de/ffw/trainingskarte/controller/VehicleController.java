@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +45,7 @@ public class VehicleController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Secured("ROLE_ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> create(@RequestBody VehicleRequest request) {
         Optional<Vehicle> existing = vehicleRepository.findByCallsign(request.callsign());
         if (existing.isPresent()) {
@@ -64,7 +64,7 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
-    @Secured("ROLE_ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody VehicleRequest request) {
         Vehicle vehicle = vehicleRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Vehicle not found: " + id));
@@ -84,7 +84,7 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}/position")
-    @Secured("ROLE_ADMIN")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updatePosition(@PathVariable Long id, @RequestBody PositionRequest request) {
         if (request.lat() < MIN_LAT || request.lat() > MAX_LAT
             || request.lng() < MIN_LNG || request.lng() > MAX_LNG) {
@@ -120,7 +120,6 @@ public class VehicleController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Secured("ROLE_ADMIN")
     public void delete(@PathVariable Long id) {
         vehicleRepository.deleteById(id);
     }

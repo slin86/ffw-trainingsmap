@@ -9,7 +9,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,6 +40,11 @@ public class AdminUserController {
         if (flashMsg != null) {
             model.addAttribute("flashMessage", flashMsg);
             session.removeAttribute("flashMessage");
+        }
+        String flashErr = (String) session.getAttribute("flashError");
+        if (flashErr != null) {
+            model.addAttribute("flashError", flashErr);
+            session.removeAttribute("flashError");
         }
         return "admin/users";
     }
@@ -76,11 +80,11 @@ public class AdminUserController {
         user.setEnabled(!user.isEnabled());
         appUserRepository.save(user);
         String status = user.isEnabled() ? "aktiviert" : "deaktiviert";
-        session.setAttribute("flashMessage", "Nutzer '" + user.getUsername() + "'" + status);
+        session.setAttribute("flashMessage", "Nutzer '" + user.getUsername() + "' " + status);
         return "redirect:/admin/users";
     }
 
-    @DeleteMapping("/{id}")
+    @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id,
                          HttpSession session,
                          Authentication authentication) {
