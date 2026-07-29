@@ -36,4 +36,4 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/slin86/ff-trainingskarte:v0.1.0
+          tags: ghcr.io/slin86/ff-trainingskarte:v0.2.0
