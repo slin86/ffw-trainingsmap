@@ -19,6 +19,12 @@ spec:
           ports:
             - containerPort: 8080
               name: http
+          env:
+            - name: REDIS_HOST_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-auth
+                  key: password
           envFrom:
             - secretRef:
                 name: feuerwehr-db
