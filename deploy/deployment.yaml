@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: ghcr.io/slin86/ff-trainingskarte:v0.3.0
+          image: ghcr.io/slin86/ff-trainingskarte:v0.2.0
           ports:
             - containerPort: 8080
               name: http
