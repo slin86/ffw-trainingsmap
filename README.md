@@ -1,78 +1,78 @@
-# FF-Trainingskarte
+# FF-Training Card
 
-Trainingstool der Freiwilligen Feuerwehr zur Echtzeit-Darstellung von Fahrzeugpositionen und -status auf einer interaktiven Hamburg-Karte. Dient der Schulung des Einsatzleithelfer-Programms (ELA/EDV) mit realistischen Funksituationen.
+Training tool for the Volunteer Fire Department to display vehicle positions and status in real time on an interactive map of Hamburg. Used to train the Emergency Operations Director Program (ELA/EDV) with realistic radio transmissions.
 
 ## Tech Stack
 
-| Ebene | Technologie |
+| Layer | Technology |
 |---|---|
 | Backend | Spring Boot 4.1, Java 21, Gradle (Kotlin DSL) |
-| UI | Thymeleaf, Leaflet + OpenStreetMap-Tiles |
-| Datenbank | PostgreSQL 16, Flyway Migrationen |
+| UI | Thymeleaf, Leaflet + OpenStreetMap tiles |
+| Database | PostgreSQL 16, Flyway migrations |
 | Sessions/Caching | Redis 7 |
-| Authentifizierung | Spring Security 7, Form-Login, Rollen ADMIN / VIEWER |
-| Echtzeit-Anbindung | Server-Sent Events (SSE) + Redis Pub/Sub |
+| Authentication | Spring Security 7, form login, roles ADMIN / VIEWER |
+| Real-time communication | Server-Sent Events (SSE) + Redis Pub/Sub |
 
-## Funktionen
+## Features
 
-### Karte (`/`)
-- Interaktive Leaflet-Karte mit Hamburger Stadtgebiet
-- Fahrzeugmarker mit farbcodiertem Status:
-  - 🟢 Frei über Funk / Frei auf Wache
-  - 🔴 Einsatz übernommen / Am Einsatzort
-  - ⚫ Außer Dienst
-- Marker-Popup zeigt Rufname, Fahrzeugtyp, Status und letzte Aktualisierung
-- Statusänderung per Knopfdruck im Popup (ALLE authenticated Nutzer)
-- Automatischer Refresh alle 10 Sekunden + SSE-Echtzeit-Updates
+### Map (`/`)
+- Interactive Leaflet map covering Hamburg
+- Vehicle markers with color-coded status:
+  - 🟢 Free on radio / Free at station
+  - 🔴 Dispatch accepted / On scene
+  - ⚫ Off duty
+- Marker popup shows call sign, vehicle type, status, and last update time
+- One-click status change in the popup (all authenticated users)
+- Auto-refresh every 10 seconds + SSE real-time updates
 
-### Verwaltung (`/admin/vehicles`, `/admin/users`)
-- **Fahrzeugverwaltung**: CRUD für Fahrzeuge mit Koordinateneingabe über Karte, Pflichtfülle und Duplikatsprüfung (Rufname)
-- **Benutzerverwaltung**: Nutzer anlegen, Rollen ändern, aktivieren/deaktivieren
-- Selbstschutz: ADMIN kann sich selbst nicht löschen oder deaktivieren
-- Nur `ROLE_ADMIN` hat Zugriff auf `/admin/**`; VIEWER erhält 403
+### Administration (`/admin/vehicles`, `/admin/users`)
+- **Vehicle management**: CRUD for vehicles with coordinate input via map, required fields and duplicate check (call sign)
+- **User management**: Create users, change roles, activate/deactivate
+- Self-protection: ADMIN cannot delete or deactivate themselves
+- Only `ROLE_ADMIN` has access to `/admin/**`; VIEWER receives 403
 
-### Echtzeit-Architektur
-- Event-basiert über Redis Pub/Sub und SSE (Server-Sent Events)
-- Fahrzeugänderung → Redis-Publish → SSE-Broadcast an alle verbundenen Karten
-- Heartbeat-Mechanismus zur Verbindungserhaltung (60s Timeout)
+### Real-time Architecture
+- Event-driven via Redis Pub/Sub and SSE (Server-Sent Events)
+- Vehicle change → Redis publish → SSE broadcast to all connected maps
+- Heartbeat mechanism for connection maintenance (60s timeout)
 
-## Statuscodes des ELA-Systems
+## Status Codes (ELA System)
 
-| Code | Bedeutung | Farbe auf Karte |
+| Code | Meaning | Color on map |
 |---|---|---|
-| 1 | Frei über Funk | Grün |
-| 2 | Frei auf Wache | Grün |
-| 3 | Einsatz übernommen | Rot |
-| 4 | Am Einsatzort | Rot |
-| 6 | Außer Dienst | Grau |
+| 1 | Free on radio | Green |
+| 2 | Free at station | Green |
+| 3 | Dispatch accepted | Red |
+| 4 | On scene | Red |
+| 6 | Off duty | Gray |
 
-## Konfiguration
+## Configuration
 
-Alle Parameter per Umgebungsvariablen konfigurierbar (Defaults für lokale Entwicklung):
+All parameters configurable via environment variables (defaults for local development):
 
-| Variable | Default | Beschreibung |
+| Variable | Default | Description |
 |---|---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/ff_trainingskarte` | JDBC-Verbindung zur Datenbank |
-| `DB_USER` | `postgres` | Datenbank-Benutzer |
-| `DB_PASSWORD` | `password` | Datenbank-Passwort |
-| `REDIS_HOST` | `localhost` | Redis-Host (Sessions + Pub/Sub) |
-| `REDIS_PORT` | `6379` | Redis-Port |
-| `SERVER_PORT` | `8080` | HTTP-Servlet-Port |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/ff_trainingskarte` | Database JDBC connection |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | `password` | Database password |
+| `REDIS_HOST` | `localhost` | Redis host (sessions + Pub/Sub) |
+| `REDIS_PORT` | `6379` | Redis port |
+| `SERVER_PORT` | `8080` | HTTP servlet port |
 
-## Lokale Entwicklung
+## Local Development
 
 ```bash
-# 1. Infrastrukturebene starten (Postgres + Redis)
+# 1. Start infrastructure layer (Postgres + Redis)
 docker compose up -d
 
-# 2. App im Dev-Modus mit Seed-Daten
+# 2. Run app in dev mode with seed data
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 App: http://localhost:8080
-Admin-Zugang: `admin` / `admin`
+Admin login: `admin` / `admin`
 
-Seedet automatisch einen ADMIN-Nutzer und vier Hamburger FF-Fahrzeuge:
+Automatically seeds one ADMIN user and four Hamburg volunteer fire department vehicles:
 - HLF 20/1 (Wandsbek)
 - DLK 12/1 (Altona)
 - TLF 3/1 (Hamburg-Mitte)
@@ -84,87 +84,87 @@ Seedet automatisch einen ADMIN-Nutzer und vier Hamburger FF-Fahrzeuge:
 ./gradlew test allTests
 ```
 
-31 Unit- und Integrationstests (`@WebMvcTest` für Controller, selbstschutz-Logik, CRUD-Abdeckung).
+31 unit and integration tests (`@WebMvcTest` for controllers, self-protection logic, CRUD coverage).
 
-## API-Endpunkte
+## API Endpoints
 
-| Methode | Pfad | Zugriff | Beschreibung |
+| Method | Path | Access | Description |
 |---|---|---|---|
-| GET | `/api/vehicles` | Authenticated | Alle Fahrzeuge zurückgeben (JSON) |
-| POST | `/api/vehicles` | ADMIN | Neues Fahrzeug anlegen |
-| PUT | `/api/vehicles/{id}` | ADMIN | Fahrzeug-Basisdaten aktualisieren |
-| PUT | `/api/vehicles/{id}/position` | ADMIN | Position ändern (Koordinatenvalidierung: Hamburg-Radius) |
-| PUT | `/api/vehicles/{id}/status` | Authenticated | Status wechseln (Werte 1,2,3,4,6 → triggert SSE-Broadcast) |
-| DELETE | `/api/vehicles/{id}` | ADMIN | Fahrzeug löschen → triggert SSE-Löschbenachrichtigung |
+| GET | `/api/vehicles` | Authenticated | Return all vehicles (JSON) |
+| POST | `/api/vehicles` | ADMIN | Create new vehicle |
+| PUT | `/api/vehicles/{id}` | ADMIN | Update vehicle basic data |
+| PUT | `/api/vehicles/{id}/position` | ADMIN | Change position (coordinate validation: Hamburg radius) |
+| PUT | `/api/vehicles/{id}/status` | Authenticated | Change status (values 1,2,3,4,6 → triggers SSE broadcast) |
+| DELETE | `/api/vehicles/{id}` | ADMIN | Delete vehicle → triggers SSE delete notification |
 
-HTTP-Request-Beispiele in `http/*.http`.
+HTTP request examples in `http/*.http`.
 
 ## Docker & Deployment
 
-### Image bauen
+### Build image
 
 ```bash
 docker buildx build --platform linux/amd64 -t ghcr.io/slin86/ff-trainingskarte:v0.1.0 --push .
 ```
 
-Zweistufiges Image: Build mit Eclipse Temurin JDK 21, Laufzeit nur JRE (non-root User `appuser`).
+Two-stage image: build with Eclipse Temurin JDK 21, runtime only JRE (non-root user `appuser`).
 
-### k3s-Deployment (Mit ArgoCD)
+### k3s Deployment (with ArgoCD)
 
-Kubernetes-Manifeste in `deploy/`:
+Kubernetes manifests in `deploy/`:
 
-| Datei | Zweck |
+| File | Purpose |
 |---|---|
 | `ns.yaml` | Namespace `feuerwehr` |
-| `configmap.yaml` | Spring-Profil `prod`, Redis-Host, SSE-Konfiguration |
-| `deployment.yaml` | 2 Replikas, liveness/readiness über Actuator `/actuator/health`, Ressourcenlimits (256m/512m Memory) |
-| `service.yaml` | ClusterIP auf Port 8080 |
-| `ingress.yaml` | Traefik-Ingress für Host `feuerwehr.home.lan` |
+| `configmap.yaml` | Spring profile `prod`, Redis host, SSE configuration |
+| `deployment.yaml` | 2 replicas, liveness/readiness via actuator `/actuator/health`, resource limits (256m/512m memory) |
+| `service.yaml` | ClusterIP on port 8080 |
+| `ingress.yaml` | Traefik ingress for host `feuerwehr.home.lan` |
 
-Secrets (`InfisicalSecret`CRD), DB-Passwort, Spring Redis-Konfiguration und CORS-Allow-Origin. **Nicht im Repository**.
+Secrets (`InfisicalSecret` CRD), DB password, Spring Redis configuration, and CORS allow-origin. **Not in the repository**.
 
 Deploy via ArgoCD:
-1. Manifeste ins ArgoCD-Repo unter `apps/feuerwehr/` kopieren
-2. ArgoCD Application-Ressource erstellen (`repoURL`, `targetRevision`, `path: apps/feuerwehr`)
-3. Sync → Pods provisionieren, Ingress aktiv
+1. Copy manifests to ArgoCD repo under `apps/feuerwehr/`
+2. Create ArgoCD Application resource (`repoURL`, `targetRevision`, `path: apps/feuerwehr`)
+3. Sync → pods provisioned, ingress active
 
 Details: [deploy/README.md](deploy/README.md)
 
-## Repository-Struktur
+## Repository Structure
 
 ```
 ff-trainingskarte/
-├── deploy/               # Kubernetes Manifeste
-├── docker-compose.yml    # Locale Entwicklungsumgebung (Postgres + Redis)
-├── Dockerfile            # Production-docker-image
-├── http/                 # HTTP-Request-Vorlagen (.http)
+├── deploy/               # Kubernetes manifests
+├── docker-compose.yml    # Local dev environment (Postgres + Redis)
+├── Dockerfile            # Production Docker image
+├── http/                 # HTTP request templates (.http)
 ├── src/main/java/de/ffw/trainingskarte/
 │   ├── config/           # SecurityConfig
-│   ├── controller/       # Web + Admin + REST API-Controller
-│   │   └── dto/          # Request-Records (Vehicle, Position, StatusChange)
-│   ├── entity/           # JPA @Entity-Klassen (Vehicle, AppUser)
-│   ├── repository/       # Spring Data Repositories
-│   ├── seeder/           # DevSeed (DataSeeder.java)
-│   └── sse/              # SSE-Registry + RedisPub/Sub Event-Verwaltung
+│   ├── controller/       # Web + Admin + REST API controllers
+│   │   └── dto/          # Request records (Vehicle, Position, StatusChange)
+│   ├── entity/           # JPA @Entity classes (Vehicle, AppUser)
+│   ├── repository/       # Spring Data repositories
+│   ├── seeder/           # Dev seed (DataSeeder.java)
+│   └── sse/              # SSE registry + Redis Pub/Sub event handling
 ├── src/main/resources/
-│   ├── db/migration/     # Flyway-Skripte
-│   ├── static/js/        # Frontend JavaScript (Leaflet-Karte)
-│   ├── templates/        # Thymeleaf-Vorlagen (map.html, login.html)
-│   └── application.yml   # Defaults (alle über Env-Overrides konfigurierbar)
-├── src/test/java/        # Unit + @WebMvcTest-Tests
+│   ├── db/migration/     # Flyway scripts
+│   ├── static/js/        # Frontend JavaScript (Leaflet map)
+│   ├── templates/        # Thymeleaf templates (map.html, login.html)
+│   └── application.yml   # Defaults (all configurable via env overrides)
+├── src/test/java/        # Unit + @WebMvcTest tests
 ```
 
-## Architektur-Entscheidungen
+## Architectural Decisions
 
-- **10s-Polling als Fallback**: Die Karte friert zuverlässig bei SSE-Verbindungsabbrüchen. Polling sichert die Darstellung auch ohne persistente Verbindungen.
-- **Redis Session-Store**: Ermöglicht horizontales Scaling (multi-replica) mit geteilter Session-Speicherung.
-- **Kein externes CSS-Framework**: Eigenes Minimal-CSS für reduzierte Abhängigkeiten und schnelles Rendering auf Tablet/Kommunikationsgeräten in der Wache.
-- **Constructor Injection durchgängig**: kein Lombok, keine `@Autowired`-Feldinjektion → explizite Abhängigkeiten, einfache Testbarkeit.
+- **10s polling as fallback**: The map freezes reliably when SSE connections drop. Polling ensures display even without persistent connections.
+- **Redis session store**: Enables horizontal scaling (multi-replica) with shared session storage.
+- **No external CSS framework**: Custom minimal CSS for reduced dependencies and fast rendering on tablets/communication devices at the station.
+- **Constructor injection throughout**: no Lombok, no `@Autowired` field injection → explicit dependencies, easy testing.
 
-## Konventionen
+## Conventions
 
-- Constructor-Injektion, kein Lombok, keine Feld-Injektion
-- UI-Texte auf Deutsch, Code in englisch
-- Keine globalen Imports; volle Paketqualifikation wo nötig
-- Nur Jakarta-Namensräume (`jakarta.*`), kein `javax.*`
-- Jede Änderung braucht einen beobachtbaren Abnahme-Check (Logzeile, Cookie-Name, HTTP-Status) – "kompiliert" beweist nichts
+- Constructor injection, no Lombok, no field injection
+- UI texts in German, code in English
+- No global imports; fully qualified packages where needed
+- Only Jakarta namespaces (`jakarta.*`), no `javax.*`
+- Every change needs an observable acceptance check (log line, cookie name, HTTP status) — "compiles" proves nothing
