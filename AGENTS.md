@@ -80,7 +80,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
 
 ## Guardrails
-
+- **Englisch** Code and Dokumentation werden in Englisch geschrieben. Kein Deutsch.
 - **Scope:** Nur die im aktuellen Prompt genannten Deliverables umsetzen.
   Verbesserungsideen als Vorschlag am Ende der Antwort nennen, NICHT umsetzen.
   Keine neuen Dependencies, Packages oder Architektur-Mechanismen ohne
