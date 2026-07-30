@@ -91,10 +91,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!markers[v.id]) {
                 markers[v.id] = L.circleMarker([v.lat, v.lng], {
-                    radius: 9,
-                    color: getStatusColor(v.status),
+                    radius: 11,
+                    color: '#1a1a1a',
+                    weight: 2,
                     fillColor: getStatusColor(v.status),
-                    fillOpacity: 0.7
+                    fillOpacity: 1.0
                 });
                 markers[v.id].bindPopup(createPopupContent(v));
                 markers[v.id].addTo(map);
