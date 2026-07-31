@@ -2,9 +2,12 @@ package de.ffw.trainingskarte.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
@@ -18,6 +21,10 @@ public class Vehicle {
 
     @Column(nullable = false, unique = true)
     private String callsign;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "scene_id")
+    private Scene scene;
 
     @Column(nullable = false)
     private String type;
@@ -56,6 +63,14 @@ public class Vehicle {
 
     public void setCallsign(String callsign) {
         this.callsign = callsign;
+    }
+
+    public Scene getScene() {
+        return scene;
+    }
+
+    public void setScene(Scene scene) {
+        this.scene = scene;
     }
 
     public String getType() {

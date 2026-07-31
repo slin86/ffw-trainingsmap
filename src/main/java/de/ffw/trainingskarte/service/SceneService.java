@@ -29,7 +29,8 @@ public class SceneService {
     }
 
     public Scene findById(Long id) {
-        return sceneRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Szenario nicht gefunden: " + id));
+        return sceneRepository.findById(id).orElseThrow(
+            () -> new EntityNotFoundException("Szenario nicht gefunden: " + id));
     }
 
     private boolean titleExists(String title) {
@@ -39,59 +40,54 @@ public class SceneService {
     public Scene create(String title, String description, double lat, double lng, Long vehicleId) {
         validateLocation(lat, lng);
 
-        if (titleExists(title)) {
-            throw new RuntimeException("Szenario-Titel '" + title + "' existiert bereits");
-        }
+        if (titleExists(title)) throw new RuntimeException("Szenario-Titel '" + title + "' existiert bereits");
 
-        var existingScene = sceneRepository.findAll().stream()
-            .filter(s -> s.getTitle().equals(title))
-            .findFirst();
-        if (existingScene.isPresent()) {
-            throw new RuntimeException("Szenario-Titel '" + title + "' existiert bereits");
-        }
+        var desc = (description != null && !description.isBlank()) ? description : null;
+        Scene scene = new Scene(title, desc, lat, lng);
+        sceneRepository.save(scene);
 
-        Scene scene;
         if (vehicleId != null && vehicleId > 0L) {
-            var vehicle = vehicleRepository.findById(vehicleId);
-            if (vehicle.isEmpty()) {
-                throw new EntityNotFoundException("Fahrzeug nicht gefunden: " + vehicleId);
-            }
-            scene = new Scene(title, description, lat, lng, vehicle.get());
-        } else {
-            scene = new Scene(title, description, lat, lng, null);
+            var vehicleOpt = vehicleRepository.findById(vehicleId);
+            if (vehicleOpt.isEmpty()) throw new EntityNotFoundException("Fahrzeug nicht gefunden: " + vehicleId);
+            vehicleOpt.get().setScene(scene);
+            vehicleRepository.save(vehicleOpt.get());
         }
 
-        return sceneRepository.save(scene);
+        return scene;
     }
 
     public void update(Long id, String title, String description, double lat, double lng, Long vehicleId) {
         validateLocation(lat, lng);
 
-        var existingScene = findById(id);
-        if (!existingScene.getTitle().equals(title)) {
+        Scene existing = findById(id);
+        if (!existing.getTitle().equals(title)) {
             if (findAll().stream().anyMatch(s -> s.getTitle().equals(title))) {
                 throw new RuntimeException("Szenario-Titel '" + title + "' existiert bereits");
             }
         }
 
-        existingScene.setTitle(title);
-        existingScene.setDescription(description);
-        existingScene.setLat(lat);
-        existingScene.setLng(lng);
+        var desc = (description != null && !description.isBlank()) ? description : null;
+        existing.setTitle(title);
+        existing.setDescription(desc);
+        existing.setLat(lat);
+        existing.setLng(lng);
 
         if (vehicleId != null && vehicleId > 0L) {
-            var vehicle = vehicleRepository.findById(vehicleId).orElse(null);
-            existingScene.setVehicle(vehicle);
-        } else {
-            existingScene.setVehicle(null);
+            var vehicleOpt = vehicleRepository.findById(vehicleId).orElse(null);
+            if (vehicleOpt == null) throw new EntityNotFoundException("Fahrzeug nicht gefunden: " + vehicleId);
+            vehicleOpt.setScene(existing);
+            vehicleRepository.save(vehicleOpt);
         }
 
-        sceneRepository.save(existingScene);
+        sceneRepository.save(existing);
     }
 
     public void delete(Long id) {
-        findById(id);
-        sceneRepository.deleteById(id);
+        Scene existing = findById(id);
+
+        if (!vehicleRepository.findBySceneId(existing.getId()).isEmpty()) throw new RuntimeException("Einsatzszenario nicht loeschbar: Fahrzeuge sind zugewiesen");
+
+        sceneRepository.delete(existing);
     }
 
     private void validateLocation(double lat, double lng) {

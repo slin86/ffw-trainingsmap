@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
@@ -21,6 +19,7 @@ public class Scene {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = true)
     private String description;
 
     @Column(nullable = false)
@@ -29,22 +28,17 @@ public class Scene {
     @Column(nullable = false)
     private double lng;
 
-    @ManyToOne
-    @JoinColumn(name = "vehicle_id")
-    private Vehicle vehicle;
-
     @Column(nullable = false)
     private OffsetDateTime createdAt;
 
     public Scene() {
     }
 
-    public Scene(String title, String description, double lat, double lng, Vehicle vehicle) {
+    public Scene(String title, String description, double lat, double lng) {
         this.title = title;
         this.description = description;
         this.lat = lat;
         this.lng = lng;
-        this.vehicle = vehicle;
         this.createdAt = OffsetDateTime.now();
     }
 
@@ -82,14 +76,6 @@ public class Scene {
 
     public void setLng(double lng) {
         this.lng = lng;
-    }
-
-    public Vehicle getVehicle() {
-        return vehicle;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
     }
 
     public OffsetDateTime getCreatedAt() {

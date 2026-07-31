@@ -1,6 +1,8 @@
 package de.ffw.trainingskarte.repository;
 
 import de.ffw.trainingskarte.entity.Vehicle;
+
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -9,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     Optional<Vehicle> findByCallsign(String callsign);
+
+    List<Vehicle> findBySceneId(Long sceneId);
 }
