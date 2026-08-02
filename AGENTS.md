@@ -62,6 +62,15 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Statuslabels in map.js mit korrekten Umlauten (UTF-8)
 - [x] Tests: Status-Validierung, VIEWER darf Status setzen aber sonst 403
 
+### M7: Single-Table-Inheritance fuer Location (complete)
+- [x] Flyway Migration `V3`: Tabelle `location` mit `location_type`, `name`, lat/lng (Hamburg-Constraints), `active`, `created_at`
+- [x] Nullable `location_id` FK auf `vehicle` - NULL bedeutet "unterwegs"
+- [x] Abstrakte Entity `Location` mit `@Entity + @Inheritance(SINGLE_TABLE) + @DiscriminatorColumn`
+- [x] Subklassen `Station` (STATION, immer aktiv) und `Incident` (INCIDENT, plus Feld `active`)
+- [x] Repositories: `LocationRepository` + `IncidentRepository.findByActiveTrue()`
+- [x] Tests fuer Entity-Erstellung, Constraint-Validierung, nullable location_id
+- [x] H2 f&uuml;r Tests hinzugef&uuml;gt, Migration tested gegen lokaler Postgres (V3 laeuft)
+
 ### M6: Deployment in k3s (complete)
 - [x] Multi-Stage Dockerfile (`eclipse-temurin:21-jdk` Build, `:21-jre` Runtime, non-root User)
 - [x] GitHub-Actions-Pipeline: baut und pusht `ghcr.io/slin86/ff-trainingskarte`
@@ -104,3 +113,6 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - **Diese Datei:** Status-Haekchen und Current State aktualisieren ist Teil
   jedes Meilensteins. Die Abschnitte "Noch offen", "Bewusste Nicht-Ziele" und
   "Guardrails" werden NICHT vom Agenten veraendert.
+- Keine Pfade ausserhalb des Projekt-Roots. Temporaere Dateien nur in
+  ./.tmp/ (im Repo, per .gitignore ausgeschlossen), niemals /tmp oder
+  absolute Systempfade.
