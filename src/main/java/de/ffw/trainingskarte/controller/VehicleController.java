@@ -1,9 +1,12 @@
 package de.ffw.trainingskarte.controller;
 
+import de.ffw.trainingskarte.controller.dto.LocationIdRequest;
 import de.ffw.trainingskarte.controller.dto.PositionRequest;
 import de.ffw.trainingskarte.controller.dto.StatusChangeRequest;
 import de.ffw.trainingskarte.controller.dto.VehicleRequest;
+import de.ffw.trainingskarte.entity.Location;
 import de.ffw.trainingskarte.entity.Vehicle;
+import de.ffw.trainingskarte.repository.LocationRepository;
 import de.ffw.trainingskarte.repository.VehicleRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -15,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,9 +37,11 @@ public class VehicleController {
     private static final double MAX_LNG = 10.4;
 
     private final VehicleRepository vehicleRepository;
+    private final LocationRepository locationRepository;
 
-    public VehicleController(VehicleRepository vehicleRepository) {
+    public VehicleController(VehicleRepository vehicleRepository, LocationRepository locationRepository) {
         this.vehicleRepository = vehicleRepository;
+        this.locationRepository = locationRepository;
     }
 
     @GetMapping
@@ -114,6 +120,27 @@ public class VehicleController {
 
         vehicle.setStatus(request.status());
         vehicle.setUpdatedAt(OffsetDateTime.now());
+        vehicle = vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(vehicle);
+    }
+
+    @PatchMapping("/{id}/location")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateLocation(@PathVariable Long id, @RequestBody LocationIdRequest request) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vehicle not found: " + id));
+
+        if (request.locationId() != null) {
+            Optional<Location> locationOpt = locationRepository.findById(request.locationId());
+            if (locationOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Location not found: " + request.locationId()));
+            }
+            vehicle.setLocation(locationOpt.get());
+        } else {
+            vehicle.setLocation(null);
+        }
+
         vehicle = vehicleRepository.save(vehicle);
         return ResponseEntity.ok(vehicle);
     }

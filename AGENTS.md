@@ -119,3 +119,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
   ./.tmp/ (im Repo, per .gitignore ausgeschlossen), niemals /tmp oder
   absolute Systempfade.
 - Nicht commiten, pushen oder deployen ohne explizite Anweisung.
+- Für Code-Änderungen das Edit-Tool nutzen, nicht sed/awk via Shell.
+  Shell-Textmanipulation ist auf macOS (BSD-Tools) fehleranfällig.
+- Ausschliesslich Pfade relativ zum Projekt-Root. Keine absoluten
+  /Users/...-Pfade konstruieren.

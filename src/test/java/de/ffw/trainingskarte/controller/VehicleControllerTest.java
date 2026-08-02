@@ -6,8 +6,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import de.ffw.trainingskarte.entity.Location;
+import de.ffw.trainingskarte.entity.Station;
 import de.ffw.trainingskarte.entity.Vehicle;
 import de.ffw.trainingskarte.repository.AppUserRepository;
+import de.ffw.trainingskarte.repository.LocationRepository;
 import de.ffw.trainingskarte.repository.VehicleRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +38,9 @@ class VehicleControllerTest {
 
     @MockitoBean
     private VehicleRepository vehicleRepository;
+
+    @MockitoBean
+    private LocationRepository locationRepository;
 
     private MockMvc mockMvc;
 
@@ -215,5 +221,50 @@ class VehicleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\":2}"))
             .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateLocationWithoutAuthReturnsOk() throws Exception {
+        Station location = new Station();
+        location.setId(1L);
+        location.setName("Feuerwache");
+        location.setLat(53.55);
+        location.setLng(9.99);
+
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+        when(locationRepository.findById(1L)).thenReturn(Optional.of(location));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(patch("/api/vehicles/1/location")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"locationId\":1}"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateLocationToNullWorks() throws Exception {
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+        when(vehicleRepository.save(any(Vehicle.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(patch("/api/vehicles/1/location")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"locationId\":null}"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateLocationWithInvalidLocationReturnsNotFound() throws Exception {
+        when(vehicleRepository.findById(1L)).thenReturn(Optional.of(testVehicle));
+
+        mockMvc.perform(patch("/api/vehicles/1/location")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"locationId\":999}"))
+            .andExpect(status().isBadRequest());
     }
 }
