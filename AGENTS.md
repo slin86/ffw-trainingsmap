@@ -20,6 +20,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - Status-Farben: gruen (1, 2), rot (3, 4), grau (6)
 - Positions-Validierung: lat 53.3-53.8, lng 9.6-10.4 (Hamburg-Gebiet)
 - Method Security: `@PreAuthorize` verwenden (nicht `@Secured` - ist ohne `securedEnabled` wirkungslos)
+- Location Subtypen: `Station` hat kein `active`-Flag (immer aktiv), nur `Incident` hat Flag
 
 ## Current State
 
@@ -87,6 +88,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
+- Station hat kein `active`-Flag, nur Incident.
 
 ## Guardrails
 - **Englisch** Code and Dokumentation werden in Englisch geschrieben. Kein Deutsch.
@@ -116,3 +118,4 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - Keine Pfade ausserhalb des Projekt-Roots. Temporaere Dateien nur in
   ./.tmp/ (im Repo, per .gitignore ausgeschlossen), niemals /tmp oder
   absolute Systempfade.
+- Nicht commiten, pushen oder deployen ohne explizite Anweisung.
