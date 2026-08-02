@@ -22,10 +22,6 @@ public class Vehicle {
     @Column(nullable = false, unique = true)
     private String callsign;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "scene_id")
-    private Scene scene;
-
     @Column(nullable = false)
     private String type;
 
@@ -63,14 +59,6 @@ public class Vehicle {
 
     public void setCallsign(String callsign) {
         this.callsign = callsign;
-    }
-
-    public Scene getScene() {
-        return scene;
-    }
-
-    public void setScene(Scene scene) {
-        this.scene = scene;
     }
 
     public String getType() {

@@ -12,5 +12,4 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     Optional<Vehicle> findByCallsign(String callsign);
 
-    List<Vehicle> findBySceneId(Long sceneId);
 }
