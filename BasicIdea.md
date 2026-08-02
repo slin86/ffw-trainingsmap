@@ -295,3 +295,201 @@ Authelia und der Bereitschaft, das dauerhaft zu pflegen.
 - Qdrant/RAG: Übungsberichte hochladen, durchsuchbar machen (bge-m3-Pipeline
   vom rag-indexer wiederverwenden)
 - Mobile-Optimierung der Kartenansicht (Kameraden nutzen Handys)
+
+Part 2: Locations und Einsätze
+
+# FFW-Trainingskarte – Erweiterung "Orte" (Stationen & Einsatzorte)
+
+Kontext für OpenCode-Sessions. Diese Datei sammelt die Prompts für die
+Erweiterung um Feuerwachen, Einsatzorte und die zugehörigen Admin-/Frontend-
+Features. Ein Prompt = eine Session = ein Deliverable, danach `git status`
+prüfen, committen, neue Session starten (wie im Rest des Projekts üblich).
+
+## Datenmodell
+
+- **`Location`** ist die Basis-Entity (JPA `SINGLE_TABLE`-Vererbung,
+  Discriminator-Spalte `location_type`). Subtypen: **`Station`**
+  (Feuerwache) und **`Incident`** (Einsatzort, z. B. ein Feuer).
+- Gemeinsame Felder: `id`, `name`, `lat`, `lng`. `Incident` zusätzlich
+  `active` (boolean) – bei `active = false` ist der Einsatzort auf der
+  Karte nicht sichtbar.
+- `SINGLE_TABLE` statt `JOINED`, weil die Subtypen schlank sind und Join-
+  Overhead unnötig ist.
+- **`vehicle`** bekommt genau ein nullable Feld `location_id` (FK auf
+  `location`). `NULL` bedeutet "Fahrzeug ist unterwegs" – in dem Fall gilt
+  die eigene, bereits vorhandene Fahrzeugposition (aus M3) statt der
+  Location-Koordinaten. Kein eigener `OnRoad`-Discriminator-Wert, keine
+  zweite FK – dadurch ist ein Fahrzeug nie an zwei Orten gleichzeitig.
+
+## Reihenfolge
+
+Prompts 1 → 7 der Reihe nach abarbeiten, jeder baut auf dem vorherigen auf.
+Bei Prompt 6 ggf. Backend/Frontend in zwei Sessions splitten, falls es in
+der Praxis zu groß wird.
+
+---
+
+### Prompt 1 – Datenschicht Location/Station/Incident
+
+```
+Lies zuerst AGENTS.md. Deliverable dieser Session: NUR Datenschicht, kein
+Controller, kein Frontend.
+
+1. Flyway-Migration Vx: Tabelle `location` mit Single-Table-Inheritance-
+   Spalte `location_type` (varchar, z.B. 'STATION'/'INCIDENT'), `id`,
+   `name`, `lat`, `lng` (Constraints wie vehicle: lat 53.3-53.8,
+   lng 9.6-10.4), `active` boolean default true (nur fuer Incident
+   relevant), `created_at`.
+2. Nullable Spalte `location_id` (FK auf `location`) auf `vehicle`. NULL
+   bedeutet "unterwegs" - Fahrzeug zeigt dann seine eigene lat/lng statt
+   der Location-Koordinaten. Kein zweites Feld, keine weitere FK.
+3. JPA: abstrakte Basis-Entity `Location` mit
+   `@Inheritance(strategy = InheritanceType.SINGLE_TABLE)` und
+   `@DiscriminatorColumn(name = "location_type")`, Subklassen `Station`
+   (`@DiscriminatorValue("STATION")`) und `Incident`
+   (`@DiscriminatorValue("INCIDENT")`, zusaetzlich Feld `active`).
+   Vehicle-Entity um nullable `@ManyToOne Location location` erweitern.
+4. Repositories: `LocationRepository` (generisch), zusaetzlich
+   `IncidentRepository extends JpaRepository<Incident, Long>` fuer
+   `findByActiveTrue()`. Station braucht kein eigenes Repository, falls
+   nicht gebraucht - sonst analog.
+5. Tests: Repository-Tests fuer Station- und Incident-Erstellung inkl.
+   Constraint-Validierung, Test dass Vehicle ohne location_id (NULL)
+   gespeichert werden kann.
+
+Nicht-Ziele: kein REST-Endpoint, keine UI, kein eigener OnRoad-Typ (das ist
+bewusst NULL, kein Discriminator-Wert dafuer).
+
+Abnahme: `./gradlew test` gruen UND Migration laeuft gegen lokale Postgres
+(V-Nummer pruefen, keine Luecke zu bestehenden Migrationen). Danach commit.
+Aktualisiere AGENTS.md ("Noch offen" + Hinweis auf Single-Table-Inheritance
+als Konvention fuer kuenftige Location-Subtypen).
+```
+
+### Prompt 2 – REST API: Locations + Zuweisung
+
+```
+Lies AGENTS.md. Deliverable: REST-Layer fuer Location/Station/Incident,
+kein Frontend.
+
+1. LocationController:
+   - GET /api/locations (optional Query-Param ?type=STATION|INCIDENT),
+     liefert alle Stationen + nur aktive Incidents; Query-Param ?all=true
+     zeigt zusaetzlich inaktive Incidents (fuer Admin-Ansicht)
+   - POST/PUT/DELETE fuer beide Subtypen, @PreAuthorize ADMIN-only
+   - PUT /api/locations/{id}/active { "active": bool } nur fuer Incidents
+     sinnvoll - bei Versuch auf einer Station 400 zurueckgeben
+2. Erweiterung VehicleController:
+   PATCH /api/vehicles/{id}/location { "locationId": long|null }
+   null setzt location_id auf NULL (= unterwegs, eigene Position gilt
+   wieder). @PreAuthorize ADMIN-only.
+3. Validierung: Location-ID muss existieren, sonst 404/400 sauber gemappt.
+4. Tests: Controller-Tests fuer alle neuen Endpoints (Security + Happy Path
+   + Validierungsfehler).
+
+Nicht-Ziele: kein Frontend/JS.
+
+Abnahme: curl-Aufrufe fuer alle Endpoints gegen laufende App (nicht nur
+Test-Build). Danach commit, AGENTS.md aktualisieren.
+```
+
+### Prompt 3 – Karte: Stationen & aktive Einsatzorte anzeigen
+
+```
+Lies AGENTS.md. Deliverable: nur map.js/map.html, kein Java.
+
+1. Ein Fetch auf GET /api/locations (liefert aktive Incidents + alle
+   Stationen) beim Laden der Karte, als eigene Marker-Typen rendern
+   (klar unterscheidbar von Fahrzeug-Markern anhand `location_type`,
+   z.B. eigenes Icon/Farbe fuer Station, anderes fuer Incident).
+2. Fahrzeuge mit gesetzter location_id: Marker an den Location-
+   Koordinaten (optional visuell geclustert/versetzt, wenn mehrere
+   Fahrzeuge an derselben Location stehen). Fahrzeuge mit location_id
+   == null ("unterwegs"): Marker an eigener lat/lng wie bisher
+   (unveraendert ggue. M3).
+3. Ins 10s-Polling aufnehmen, damit ein waehrend der Session deaktivierter
+   Incident zuverlaessig von der Karte verschwindet.
+4. Popup pro Location zeigt Namen und Liste der zugewiesenen Fahrzeuge.
+
+Nicht-Ziele: kein Editieren aus diesem Popup heraus (kommt in Prompt 7).
+
+Abnahme: manuell im Browser mit mind. 1 Station + 1 aktivem + 1 inaktivem
+Incident geprueft (curl-Testdaten anlegen), inkl. mind. 1 Fahrzeug ohne
+location_id. Danach commit.
+```
+
+### Prompt 4 – Admin-UI: echte Navigation
+
+```
+Lies AGENTS.md. Deliverable: nur /admin/** Templates + zugehoerige
+Controller-Anpassungen fuer Navigation, keine neue Fachlogik.
+
+Baue eine gemeinsame Navigations-Leiste/Sidebar fuer den Adminbereich mit
+Eintraegen: Fahrzeuge, Nutzer, Orte (Stationen + Einsatzorte, technisch
+eine Tabelle - im UI ggf. als zwei gefilterte Listen unter einem
+Menuepunkt). Aktueller Bereich optisch markiert. Bestehende Admin-Views
+(Fahrzeuge, Nutzer) bekommen die Navigation eingebunden, neue simple
+List/Create/Edit-Views fuer Orte (nutzt Endpoints aus Prompt 2, inkl.
+Active-Toggle fuer Incidents).
+
+Nicht-Ziele: kein neues CSS-Framework, bestehendes Thymeleaf-Layout
+wiederverwenden.
+
+Abnahme: Browser-Test fuer alle Nav-Punkte inkl. Erstellen/Bearbeiten
+eines Incidents (Toggle active testen) und einer Station. Danach commit.
+```
+
+### Prompt 5 – Overlay oben rechts
+
+```
+Lies AGENTS.md. Deliverable: nur map.js/map.html.
+
+Erstelle ein Overlay-Panel oben rechts auf der Karte (einklappbar), das
+zwei Listen zeigt: Fahrzeuge (Name+Status, "unterwegs" kennzeichnen wenn
+location_id == null) und Orte (Name, Typ-Icon fuer Station/Incident aus
+/api/locations). Datenquelle: bereits vorhandene Polling-Calls, keine
+neuen Endpoints noetig. Klick auf einen Listeneintrag zentriert/oeffnet
+den zugehoerigen Marker-Popup auf der Karte.
+
+Abnahme: Browser-Test, Overlay aktualisiert sich im 10s-Rhythmus mit.
+Danach commit.
+```
+
+### Prompt 6 – Fahrzeugposition im Frontend änderbar
+
+```
+Lies AGENTS.md. Deliverable: Backend-Endpoint + Frontend, aber klein halten
+- wenn zu gross, Backend und Frontend in zwei Sessions splitten.
+
+1. PATCH /api/vehicles/{id}/position { lat, lng } - ADMIN-only, gleiche
+   Bounds-Validierung wie bestehend. Sinnvoll v.a. fuer Fahrzeuge mit
+   location_id == null ("unterwegs"); bei gesetzter location_id kann der
+   Endpoint die Position trotzdem setzen (z.B. fuer manuelle Korrekturen),
+   das Frontend soll draggen aber primaer fuer "unterwegs"-Fahrzeuge
+   anbieten.
+2. Im Frontend: Fahrzeug-Marker fuer ADMIN draggable machen (Leaflet
+   draggable: true nur wenn Rolle ADMIN, aus vorhandenem Auth-Status
+   ableiten), bei dragend PATCH aufrufen, bei Fehler Marker zurueck an
+   alte Position.
+
+Abnahme: Browser-Test als ADMIN (drag + Reload zeigt neue Position) und als
+VIEWER (kein Drag moeglich). Danach commit.
+```
+
+### Prompt 7 – Fahrzeug-Zuweisung im Frontend
+
+```
+Lies AGENTS.md. Deliverable: nur Frontend, nutzt Endpoint aus Prompt 2.
+
+Im Popup einer Station oder eines Incidents (fuer ADMIN sichtbar) ein
+Auswahlfeld "Fahrzeug zuweisen" mit allen Fahrzeugen. Das Auswahlfeld
+enthaelt zusaetzlich die Option "Unterwegs" (= null) fuer Fahrzeuge, die
+aktuell dieser Location zugeordnet sind - Auswahl von "Unterwegs" entfernt
+die Zuordnung direkt (kein separater Entfernen-Button noetig). Aenderung
+loest PATCH /api/vehicles/{id}/location mit locationId oder null aus.
+
+Abnahme: Browser-Test - Fahrzeug zuweisen, Popup/Overlay aktualisiert sich,
+Reload behaelt Zuordnung, "Unterwegs" waehlen setzt Fahrzeug zurueck auf
+eigene Position. Danach commit, AGENTS.md finalisieren ("Noch offen" fuer
+dieses Feature schliessen).
+```

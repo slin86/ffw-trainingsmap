@@ -37,6 +37,10 @@ public class Vehicle {
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id")
+    private Location location;
+
     public Vehicle() {
     }
 
@@ -47,6 +51,14 @@ public class Vehicle {
         this.lat = lat;
         this.lng = lng;
         this.updatedAt = OffsetDateTime.now();
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public Long getId() {
