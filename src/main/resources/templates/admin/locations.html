@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Orte - Verwaltung</title>
-    <link rel="stylesheet" th:href="@{/css/admin.css}" />
-</head>
+        <link rel="stylesheet" th:href="@{/css/admin.css}" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    </head>
 <body>
     <div class="admin-page">
         <aside class="admin-sidebar">
@@ -37,8 +39,8 @@
                 <div class="form-section">
                     <h2>Neuen Ort anlegen</h2>
                     <form method="post" th:action="@{/admin/locations}">
-                        <input type="hidden" id="lat" name="lat" />
-                        <input type="hidden" id="lng" name="lng" />
+                        <input type="hidden" id="createLat" name="lat" />
+                        <input type="hidden" id="createLng" name="lng" />
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="type">Typ</label>
@@ -53,7 +55,10 @@
                             </div>
                         </div>
                         <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
-                        <div style="height: 200px; width: 100%; margin-top: 0.5rem;" id="createLocationMap"></div>
+                        <div class="form-section">
+                            <h2>Position (auf der Karte klicken)</h2>
+                            <div id="position-map"></div>
+                        </div>
                         <button type="submit" class="btn btn-primary">Anlegen</button>
                     </form>
                 </div>
@@ -128,26 +133,16 @@
 
                     marker.on('dragend', function(e) {
                         var pos = e.target.getLatLng();
-                        document.getElementById('lat').value = pos.lat;
-                        document.getElementById('lng').value = pos.lng;
+                        document.getElementById('createLat').value = pos.lat;
+                        document.getElementById('createLng').value = pos.lng;
                     });
 
                     map.on('click', function(e) {
                         marker.setLatLng(e.latlng);
-                        document.getElementById('lat').value = e.latlng.lat;
-                        document.getElementById('lng').value = e.latlng.lng;
-                    });
-
-                    var form = document.getElementById('editForm');
-                    form.addEventListener('submit', function() {
-                        lat = parseFloat(document.getElementById('lat').value);
-                        lng = parseFloat(document.getElementById('lng').value);
-                        document.getElementById('lat').value = lat.toFixed(6);
-                        document.getElementById('lng').value = lng.toFixed(6);
+                        document.getElementById('createLat').value = e.latlng.lat;
+                        document.getElementById('createLng').value = e.latlng.lng;
                     });
                 });
             </script>
-        </main>
-    </div>
 </body>
 </html>
