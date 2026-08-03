@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }).addTo(map);
 
     var markers = {};
+    var locationMarkers = {};
 
     var statusLabels = {
         1: 'Frei über Funk',
@@ -63,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    function createPopupContent(vehicle) {
+    function createVehiclePopupContent(vehicle) {
         var html = '<b>' + vehicle.callsign + '</b><br/>';
         html += vehicle.type + '<br/>';
         html += '<i>Status:</i> ' + (statusLabels[vehicle.status] || vehicle.status) + '<br/>';
@@ -79,48 +80,119 @@ document.addEventListener('DOMContentLoaded', function () {
         return html;
     }
 
+    function createLocationPopupContent(location) {
+        var html = '<b>' + location.name + '</b><br/>';
+        html += '<i>Typ:</i> ' + (location.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + '<br/>';
+        
+        if (location.vehicles && location.vehicles.length > 0) {
+            html += '<hr/><b>Fahrzeuge:</b><br/>';
+            location.vehicles.forEach(function (v) {
+                var statusColor = getStatusColor(v.status);
+                html += '<div style="margin:4px 0;">';
+                html += '<span style="display:inline-block;width:12px;height:12px;background:' + statusColor + ';border-radius:50%;vertical-align:middle;margin-right:6px;"></span>';
+                html += v.callsign + ' (' + (statusLabels[v.status] || v.status) + ')';
+                html += '</div>';
+            });
+        } else {
+            html += '<br/><i>Keine Fahrzeuge zugewiesen</i>';
+        }
+
+        return html;
+    }
+
     window.changeMarkerStatus = function(vehicleId, newStatus) {
         changeStatus(vehicleId, newStatus);
     };
 
-    function updateMap(vehicles) {
-        var currentIds = {};
+    function updateMap(vehicles, locations) {
+        var currentVehicleIds = {};
+        var currentLocationIds = {};
 
+        // Process vehicles
         vehicles.forEach(function (v) {
-            currentIds[v.id] = v;
+            currentVehicleIds[v.id] = v;
+
+            // Determine lat/lng based on location_id
+            var lat = v.lat;
+            var lng = v.lng;
+            if (v.location && v.location.id) {
+                lat = v.location.lat;
+                lng = v.location.lng;
+            }
 
             if (!markers[v.id]) {
-                markers[v.id] = L.circleMarker([v.lat, v.lng], {
+                markers[v.id] = L.circleMarker([lat, lng], {
                     radius: 11,
                     color: '#1a1a1a',
                     weight: 2,
                     fillColor: getStatusColor(v.status),
                     fillOpacity: 1.0
                 });
-                markers[v.id].bindPopup(createPopupContent(v));
+                markers[v.id].bindPopup(createVehiclePopupContent(v));
                 markers[v.id].addTo(map);
             } else {
-                markers[v.id].setLatLng([v.lat, v.lng]);
+                if (markers[v.id].getLatLng().lat !== lat || markers[v.id].getLatLng().lng !== lng) {
+                    markers[v.id].setLatLng([lat, lng]);
+                }
                 markers[v.id].setStyle({ color: getStatusColor(v.status), fillColor: getStatusColor(v.status) });
-                markers[v.id].setPopupContent(createPopupContent(v));
+                markers[v.id].setPopupContent(createVehiclePopupContent(v));
             }
         });
 
+        // Remove old vehicle markers
         Object.keys(markers).forEach(function (id) {
-            if (!currentIds[id]) {
+            if (!currentVehicleIds[id]) {
                 map.removeLayer(markers[id]);
                 delete markers[id];
             }
         });
+
+        // Process locations
+        if (locations) {
+            locations.forEach(function (loc) {
+                currentLocationIds[loc.id] = loc;
+
+                if (!locationMarkers[loc.id]) {
+                    var isStation = loc.location_type === 'STATION';
+                    locationMarkers[loc.id] = L.circleMarker([loc.lat, loc.lng], {
+                        radius: 15,
+                        color: isStation ? '#1976d2' : '#fbc02d',
+                        weight: 3,
+                        fillColor: isStation ? '#4fc3f7' : '#fff9c4',
+                        fillOpacity: 0.8
+                    });
+                    locationMarkers[loc.id].bindPopup(createLocationPopupContent(loc));
+                    locationMarkers[loc.id].addTo(map);
+                } else {
+                    if (locationMarkers[loc.id].getLatLng().lat !== loc.lat || locationMarkers[loc.id].getLatLng().lng !== loc.lng) {
+                        locationMarkers[loc.id].setLatLng([loc.lat, loc.lng]);
+                    }
+                    locationMarkers[loc.id].setStyle({ color: isStation ? '#1976d2' : '#fbc02d', fillColor: isStation ? '#4fc3f7' : '#fff9c4' });
+                    locationMarkers[loc.id].setPopupContent(createLocationPopupContent(loc));
+                }
+            });
+
+            // Remove old location markers
+            Object.keys(locationMarkers).forEach(function (id) {
+                if (!currentLocationIds[id]) {
+                    map.removeLayer(locationMarkers[id]);
+                    delete locationMarkers[id];
+                }
+            });
+        }
     }
 
-    function fetchVehicles() {
-        fetch('/api/vehicles')
-            .then(function (response) { return response.json(); })
-            .then(updateMap)
-            .catch(function (err) { console.error('Failed to fetch vehicles:', err); });
+    function fetchData() {
+        var vehiclesPromise = fetch('/api/vehicles').then(function (response) { return response.json(); });
+        var locationsPromise = fetch('/api/locations').then(function (response) { return response.json(); });
+
+        Promise.all([vehiclesPromise, locationsPromise]).then(function (results) {
+            updateMap(results[0], results[1]);
+        }).catch(function (err) {
+            console.error('Failed to fetch data:', err);
+        });
     }
 
-    fetchVehicles();
-    setInterval(fetchVehicles, 10000);
+    fetchData();
+    setInterval(fetchData, 10000);
 });

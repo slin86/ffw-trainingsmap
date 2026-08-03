@@ -41,7 +41,7 @@ public class LocationController {
             @RequestParam(required = false) Boolean all) {
 
         if (type != null && "STATION".equalsIgnoreCase(type)) {
-            List<Location> stations = locationRepository.findAll()
+            List<Location> stations = locationRepository.findAllWithVehicles()
                     .stream()
                     .filter(s -> s instanceof Station)
                     .toList();
@@ -55,7 +55,7 @@ public class LocationController {
             return ResponseEntity.ok(incidents);
         }
 
-        List<Location> stations = locationRepository.findAll()
+        List<Location> stations = locationRepository.findAllWithVehicles()
                 .stream()
                 .filter(s -> s instanceof Station)
                 .toList();

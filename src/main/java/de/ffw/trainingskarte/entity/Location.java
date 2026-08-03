@@ -8,9 +8,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -33,6 +36,9 @@ public abstract class Location {
 
     @Column(name = "created_at", nullable = false)
     protected OffsetDateTime createdAt;
+
+    @OneToMany(mappedBy = "location")
+    protected List<Vehicle> vehicles = new ArrayList<>();
 
     public Location() {
     }
@@ -71,6 +77,10 @@ public abstract class Location {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public List<Vehicle> getVehicles() {
+        return vehicles;
     }
 
     @PrePersist
