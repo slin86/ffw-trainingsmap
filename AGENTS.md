@@ -84,6 +84,31 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Ingress-Host `feuerwehr.home.lan`
 - [x] Erster Admin manuell per SQL angelegt (BCrypt-Hash, `$2a$`, role ohne ROLE_-Praefix)
 
+### M8: Karte mit Location-Markern (complete)
+- [x] GET /api/locations beim Laden der Karte fuer Stationen + aktive Incidents
+- [x] Location Marker (blau f&uuml;r Station, gelb f&uuml;r active Incident)
+- [x] Fahrzeuge mit location_id: Marker an Location-Koordinaten
+- [x] Fahrzeuge ohne location_id ("unterwegs"): Marker an eigener lat/lng
+- [x] Popup pro Location zeigt Name + Typ + Listen der zugewiesenen Fahrzeuge
+
+### M9: Admin UI Sidebar (complete)
+- [x] Gemeinsame Sidebar f&uuml;r Admin-Bereich mit Nav (Fahrzeuge, Nutzer, Orte)
+- [x] Aktueller Bereich optisch markiert
+- [x] AdminLocationController: CRUD f&uuml;r Stations + Incidents
+- [x] Toggle active Status nur f&uuml;r Incidents
+
+### M10: Drag-and-Drop Positionierung (complete)
+- [x] PATCH /api/vehicles/{id}/position (ADMIN-only, Bounds validieren)
+- [x] Fahrzeug-Marker draggable nur als ADMIN
+- [x] dragend: PATCH -> neue Position speichern
+- [x] Fehler fallen Marker auf alte Position zur&uuml;ck
+
+### M11: Location Vehicle Zuweisung (complete)
+- [x] Dropdown in Station/Incident-Popup f&uuml;r ADMIN sichtbar
+- [x] Auswahl alle nicht-zugeordneten Fahrzeuge
+- [x] Option "Unterwegs" (null) entfernt Zuordnung direkt
+- [x] onChange: PATCH /api/vehicles/{id}/location
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
