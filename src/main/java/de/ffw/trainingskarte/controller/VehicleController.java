@@ -108,6 +108,25 @@ public class VehicleController {
         return ResponseEntity.ok(vehicle);
     }
 
+    @PatchMapping("/{id}/position")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> patchPosition(@PathVariable Long id, @RequestBody PositionRequest request) {
+        if (request.lat() < MIN_LAT || request.lat() > MAX_LAT
+            || request.lng() < MIN_LNG || request.lng() > MAX_LNG) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Koordinaten muessen im Hamburger Stadtgebiet liegen: lat 53.3-53.8, lng 9.6-10.4"));
+        }
+
+        Vehicle vehicle = vehicleRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vehicle not found: " + id));
+
+        vehicle.setLat(request.lat());
+        vehicle.setLng(request.lng());
+        vehicle.setUpdatedAt(OffsetDateTime.now());
+        vehicle = vehicleRepository.save(vehicle);
+        return ResponseEntity.ok(vehicle);
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody StatusChangeRequest request) {
         if (!isValidStatus(request.status())) {

@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', function () {
     var locationMarkers = {};
     var sidebarCollapsed = false;
 
+    // Check if user is admin via header/meta or session
+    function isAdmin() {
+        return document.querySelector('meta[name="_csrf"]') !== null;
+    }
+
     var statusLabels = {
         1: 'Frei über Funk',
         2: 'Frei auf Wache',
@@ -77,6 +82,30 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }).catch(function (err) {
             console.error('Status change failed:', err);
+        });
+    }
+
+    function updateVehiclePosition(vehicleId, lat, lng) {
+        var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        var headers = { 'Content-Type': 'application/json' };
+        headers[header] = token;
+
+        fetch('/api/vehicles/' + vehicleId + '/position', {
+            method: 'PATCH',
+            headers: headers,
+            body: JSON.stringify({ lat: lat, lng: lng })
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error('Position update failed');
+            }
+            return response.json();
+        }).then(function (updatedVehicle) {
+            if (updatedVehicle && markers[vehicleId]) {
+                markers[vehicleId].setLatLng([lat, lng]);
+            }
+        }).catch(function (err) {
+            console.error('Position update error:', err);
         });
     }
 
@@ -197,21 +226,46 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (!markers[v.id]) {
+                var isEditable = isAdmin();
                 markers[v.id] = L.circleMarker([lat, lng], {
                     radius: 11,
                     color: '#1a1a1a',
                     weight: 2,
                     fillColor: getStatusColor(v.status),
-                    fillOpacity: 1.0
+                    fillOpacity: 1.0,
+                    draggable: isEditable
                 });
                 markers[v.id].bindPopup(createVehiclePopupContent(v));
+                
+                if (isEditable) {
+                    var oldLatLng;
+                    markers[v.id].on('dragstart', function() {
+                        oldLatLng = this.getLatLng();
+                    });
+                    markers[v.id].on('dragend', function(e) {
+                        var newLatLng = e.target.getLatLng();
+                        updateVehiclePosition(v.id, newLatLng.lat, newLatLng.lng)
+                            .catch(function(err) {
+                                if (oldLatLng) {
+                                    e.target.setLatLng(oldLatLng);
+                                }
+                            });
+                    });
+                }
+                
                 markers[v.id].addTo(map);
             } else {
+                var isEditable = isAdmin();
                 if (markers[v.id].getLatLng().lat !== lat || markers[v.id].getLatLng().lng !== lng) {
                     markers[v.id].setLatLng([lat, lng]);
                 }
                 markers[v.id].setStyle({ color: getStatusColor(v.status), fillColor: getStatusColor(v.status) });
                 markers[v.id].setPopupContent(createVehiclePopupContent(v));
+                
+                // Update draggable state
+                if (markers[v.id].options.draggable !== isEditable) {
+                    markers[v.id].setOptions({ draggable: isEditable });
+                }
             }
         });
 
