@@ -1,0 +1,18 @@
+<aside class="admin-sidebar">
+    <nav class="admin-nav">
+        <ul>
+            <li th:class="${currentPage == 'vehicles' ? 'active' : ''}">
+                <a th:href="@{/admin/vehicles}">Fahrzeuge</a>
+            </li>
+            <li th:class="${currentPage == 'users' ? 'active' : ''}">
+                <a th:href="@{/admin/users}">Nutzer</a>
+            </li>
+            <li th:class="${currentPage == 'locations' ? 'active' : ''}">
+                <a th:href="@{/admin/locations}">Orte</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="admin-sidebar-footer">
+        <a th:href="@{/}">&larr; Karte anzeigen</a>
+    </div>
+</aside>

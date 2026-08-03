@@ -63,3 +63,58 @@ td.actions a, td.actions button { margin-right: 0.5rem; font-size: 0.8rem; }
 #position-map { height: 200px; width: 100%; margin-top: 0.5rem; border-radius: 4px; border: 1px solid #ccc; }
 
 .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.admin-page {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 200px;
+    background: #fff;
+    border-right: 1px solid #eee;
+    padding: 1rem;
+}
+
+.admin-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-nav li {
+    margin-bottom: 0.5rem;
+}
+
+.admin-nav a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.admin-nav a:hover {
+    background: #f5f5f5;
+}
+
+.admin-nav .active a {
+    background: #d32f2f;
+    color: #fff;
+}
+
+.admin-sidebar-footer {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.admin-sidebar-footer a {
+    display: block;
+    text-align: center;
+    color: #666;
+}
+
+.admin-content {
+    flex: 1;
+    min-width: 0;
+}
