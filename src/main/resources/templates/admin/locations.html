@@ -49,16 +49,17 @@
                                 <label for="name">Name</label>
                                 <input type="text" id="name" name="name" required placeholder="z.B. Feuerwache 1" />
                             </div>
-                            <div class="form-group">
-                                <label for="lat">Breitengrad</label>
-                                <input type="number" id="lat" name="lat" step="0.000001" required placeholder="53.55" min="53.3" max="53.8" />
-                            </div>
-                            <div class="form-group">
-                                <label for="lng">Laengengrad</label>
-                                <input type="number" id="lng" name="lng" step="0.000001" required placeholder="9.99" min="9.6" max="10.4" />
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Anlegen</button>
+                             <div class="form-group">
+                                 <label for="lat">Breitengrad</label>
+                                 <input type="number" id="lat" name="lat" step="0.000001" required placeholder="53.55" min="53.3" max="53.8" />
+                             </div>
+                             <div class="form-group">
+                                 <label for="lng">Laengengrad</label>
+                                 <input type="number" id="lng" name="lng" step="0.000001" required placeholder="9.99" min="9.6" max="10.4" />
+                             </div>
+                         </div>
+                         <div style="height: 200px; width: 100%; margin-top: 0.5rem;" id="latLngMap"></div>
+                         <button type="submit" class="btn btn-primary">Anlegen</button>
                     </form>
                 </div>
 

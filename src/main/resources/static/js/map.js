@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var sidebarCollapsed = false;
     var allVehicles = [];
     var csrfToken = null;
+    var latLngMap = null;
+    var latLngMarker = null;
 
     // Check if user is admin via header/meta or session
     function isAdmin() {
@@ -64,11 +66,45 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function setupLatLngMap() {
+        var mapDiv = document.getElementById('latLngMap');
+        if (!mapDiv || latLngMap) return;
+
+        latLngMap = L.map(mapDiv).setView([53.55, 9.99], 12);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(latLngMap);
+
+        latLngMap.on('click', function(e) {
+            var latInput = document.getElementById('lat');
+            var lngInput = document.getElementById('lng');
+            if (latInput && lngInput) {
+                latInput.value = e.latlng.lat.toFixed(6);
+                lngInput.value = e.latlng.lng.toFixed(6);
+            }
+            if (latLngMarker) {
+                latLngMap.removeLayer(latLngMarker);
+            }
+            latLngMarker = L.marker(e.latlng).addTo(latLngMap);
+        });
+    }
+
     function changeStatus(vehicleId, newStatus) {
         var token = getCsrfToken();
         var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
         var headers = { 'Content-Type': 'application/json' };
         headers[header] = token;
+
+        // Update UI immediately with optimistic update
+        if (markers[vehicleId]) {
+            markers[vehicleId].setStyle({
+                color: getStatusColor(newStatus),
+                fillColor: getStatusColor(newStatus)
+            });
+            var vehicleData = allVehicles.find(function(v) { return v.id == vehicleId; });
+            if (vehicleData) vehicleData.status = newStatus;
+        }
 
         fetch('/api/vehicles/' + vehicleId + '/status', {
             method: 'PUT',
@@ -77,20 +113,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(function (response) {
             if (!response.ok) {
                 console.error('Status change failed with status:', response.status);
+                // Revert on error
+                var oldStatus = allVehicles.find(function(v) { return v.id == vehicleId; })?.status;
+                if (markers[vehicleId] && oldStatus !== undefined) {
+                    markers[vehicleId].setStyle({
+                        color: getStatusColor(oldStatus),
+                        fillColor: getStatusColor(oldStatus)
+                    });
+                }
                 return;
             }
             return response.json();
         }).then(function (updatedVehicle) {
-            if (updatedVehicle && markers[vehicleId]) {
-                markers[vehicleId].setStyle({
-                    color: getStatusColor(updatedVehicle.status),
-                    fillColor: getStatusColor(updatedVehicle.status)
-                });
-                var popupContent = createPopupContent(updatedVehicle);
-                markers[vehicleId].setPopupContent(popupContent);
+            // Sync with server state
+            if (updatedVehicle && allVehicles) {
+                var idx = allVehicles.findIndex(function(v) { return v.id == vehicleId; });
+                if (idx >= 0) allVehicles[idx] = updatedVehicle;
             }
         }).catch(function (err) {
             console.error('Status change failed:', err);
+        }).then(function() {
+            // Poll immediately after status change
+            fetchData();
         });
     }
 
@@ -213,6 +257,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var vehicleList = document.getElementById('vehicle-list');
         var locationList = document.getElementById('location-list');
 
+        // Sort vehicles by callsign
+        var sortedVehicles = vehicles ? vehicles.slice().sort(function(a, b) {
+            return a.callsign.localeCompare(b.callsign);
+        }) : [];
+
         // Format vehicles
         vehicleList.innerHTML = '';
         if (vehicles && vehicles.length > 0) {
@@ -244,7 +293,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Format locations
         locationList.innerHTML = '';
         if (locations && locations.length > 0) {
-            locations.forEach(function (l) {
+            var sortedLocations = locations.slice().sort(function(a, b) {
+                return a.name.localeCompare(b.name);
+            });
+            sortedLocations.forEach(function (l) {
                 var isStation = l.location_type === 'STATION';
                 var typeIconClass = isStation ? 'type-station' : 'type-incident';
                 
@@ -390,4 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     fetchData();
     setInterval(fetchData, 10000);
+
+    // Setup location map if element exists
+    setupLatLngMap();
 });
