@@ -8,10 +8,19 @@ document.addEventListener('DOMContentLoaded', function () {
     var markers = {};
     var locationMarkers = {};
     var sidebarCollapsed = false;
+    var allVehicles = [];
+    var csrfToken = null;
 
     // Check if user is admin via header/meta or session
     function isAdmin() {
         return document.querySelector('meta[name="_csrf"]') !== null;
+    }
+
+    function getCsrfToken() {
+        if (!csrfToken) {
+            csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        }
+        return csrfToken;
     }
 
     var statusLabels = {
@@ -56,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function changeStatus(vehicleId, newStatus) {
-        var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var token = getCsrfToken();
         var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
         var headers = { 'Content-Type': 'application/json' };
         headers[header] = token;
@@ -86,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateVehiclePosition(vehicleId, lat, lng) {
-        var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var token = getCsrfToken();
         var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
         var headers = { 'Content-Type': 'application/json' };
         headers[header] = token;
@@ -106,6 +115,26 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }).catch(function (err) {
             console.error('Position update error:', err);
+        });
+    }
+
+    function assignVehicleToLocation(vehicleId, locationId) {
+        var token = getCsrfToken();
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        var headers = { 'Content-Type': 'application/json' };
+        headers[header] = token;
+
+        fetch('/api/vehicles/' + vehicleId + '/location', {
+            method: 'PATCH',
+            headers: headers,
+            body: JSON.stringify({ locationId: locationId })
+        }).then(function (response) {
+            if (!response.ok) {
+                throw new Error('Location assignment failed');
+            }
+            return response.json();
+        }).catch(function (err) {
+            console.error('Location assignment error:', err);
         });
     }
 
@@ -142,6 +171,24 @@ document.addEventListener('DOMContentLoaded', function () {
             html += '<br/><i>Keine Fahrzeuge zugewiesen</i>';
         }
 
+        if (isAdmin()) {
+            html += '<hr/><div class="assign-vehicle-section">';
+            html += '<label>Fahrzeug zuweisen:</label>';
+            html += '<select id="assign-vehicle-' + location.id + '" onchange="window.assignSelectedVehicle(' + location.id + ')">';
+            html += '<option value="">Bitte wählen...</option>';
+            
+            // Filter out vehicles already assigned to this location
+            var assignedIds = (location.vehicles || []).map(function(v) { return v.id; });
+            
+            allVehicles.forEach(function (v) {
+                if (!assignedIds.includes(v.id)) {
+                    html += '<option value="' + v.id + '">' + v.callsign + ' (' + (statusLabels[v.status] || v.status) + ')</option>';
+                }
+            });
+            
+            html += '</select></div>';
+        }
+
         return html;
     }
 
@@ -149,7 +196,20 @@ document.addEventListener('DOMContentLoaded', function () {
         changeStatus(vehicleId, newStatus);
     };
 
+    window.assignSelectedVehicle = function(locationId) {
+        var select = document.getElementById('assign-vehicle-' + locationId);
+        if (!select || !select.value) return;
+
+        var vehicleId = parseInt(select.value);
+        assignVehicleToLocation(vehicleId, locationId);
+        
+        // Reset to default option
+        select.value = '';
+    };
+
     function updateSidebar(vehicles, locations) {
+        allVehicles = vehicles;
+        
         var vehicleList = document.getElementById('vehicle-list');
         var locationList = document.getElementById('location-list');
 
@@ -210,6 +270,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateMap(vehicles, locations) {
+        allVehicles = vehicles;
+        
         var currentVehicleIds = {};
         var currentLocationIds = {};
 
