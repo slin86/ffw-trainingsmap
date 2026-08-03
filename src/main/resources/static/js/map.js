@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var markers = {};
     var locationMarkers = {};
+    var sidebarCollapsed = false;
 
     var statusLabels = {
         1: 'Frei über Funk',
@@ -35,6 +36,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
     }
 
+    function toggleSidebar() {
+        sidebarCollapsed = !sidebarCollapsed;
+        var overlay = document.getElementById('sidebar');
+        var btn = document.getElementById('toggleBtn');
+        
+        if (sidebarCollapsed) {
+            overlay.classList.add('sidebar-collapsed');
+            btn.textContent = '▲';
+        } else {
+            overlay.classList.remove('sidebar-collapsed');
+            btn.textContent = '▼';
+        }
+    }
+
     function changeStatus(vehicleId, newStatus) {
         var token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
@@ -57,7 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     color: getStatusColor(updatedVehicle.status),
                     fillColor: getStatusColor(updatedVehicle.status)
                 });
-                markers[vehicleId].setPopupContent(createPopupContent(updatedVehicle));
+                var popupContent = createPopupContent(updatedVehicle);
+                markers[vehicleId].setPopupContent(popupContent);
             }
         }).catch(function (err) {
             console.error('Status change failed:', err);
@@ -103,6 +119,66 @@ document.addEventListener('DOMContentLoaded', function () {
     window.changeMarkerStatus = function(vehicleId, newStatus) {
         changeStatus(vehicleId, newStatus);
     };
+
+    function updateSidebar(vehicles, locations) {
+        var vehicleList = document.getElementById('vehicle-list');
+        var locationList = document.getElementById('location-list');
+
+        // Format vehicles
+        vehicleList.innerHTML = '';
+        if (vehicles && vehicles.length > 0) {
+            vehicles.forEach(function (v) {
+                var wasAtLocation = v.location && v.location.id;
+                var statusColor = getStatusColor(v.status);
+                
+                var item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = '<div class="vehicle-info">' +
+                    '<span style="color:' + statusColor + ';">●</span> ' +
+                    '<strong>' + v.callsign + '</strong><br/>' +
+                    '<span class="vehicle-status">' + (statusLabels[v.status] || v.status) + '</span>' +
+                    (wasAtLocation ? '' : '<span class="underway">unterwegs</span>') +
+                '</div>';
+                
+                item.onclick = function() {
+                    if (markers[v.id]) {
+                        markers[v.id].openPopup();
+                        map.flyTo(markers[v.id].getLatLng(), 14);
+                    }
+                };
+                vehicleList.appendChild(item);
+            });
+        } else {
+            vehicleList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine Fahrzeuge</div>';
+        }
+
+        // Format locations
+        locationList.innerHTML = '';
+        if (locations && locations.length > 0) {
+            locations.forEach(function (l) {
+                var isStation = l.location_type === 'STATION';
+                var typeIconClass = isStation ? 'type-station' : 'type-incident';
+                
+                var item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = '<div>' +
+                    '<span class="location-type ' + typeIconClass + '"></span>' +
+                    '<strong>' + l.name + '</strong><br/>' +
+                    '<small>(' + (isStation ? 'Feuerwache' : 'Einsatzort') + ')' + '</small>' +
+                '</div>';
+                
+                item.onclick = function() {
+                    if (locationMarkers[l.id]) {
+                        locationMarkers[l.id].openPopup();
+                        map.flyTo(locationMarkers[l.id].getLatLng(), 14);
+                    }
+                };
+                locationList.appendChild(item);
+            });
+        } else {
+            locationList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine Orte</div>';
+        }
+    }
 
     function updateMap(vehicles, locations) {
         var currentVehicleIds = {};
@@ -180,6 +256,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }
+
+        // Update sidebar
+        updateSidebar(vehicles, locations);
     }
 
     function fetchData() {
