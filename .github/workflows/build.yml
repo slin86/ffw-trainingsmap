@@ -37,5 +37,5 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/slin86/nilsholthues-web:${{ github.sha }}
-            ghcr.io/slin86/nilsholthues-web:latest
+            ghcr.io/slin86/ffw-trainingsmap:${{ github.sha }}
+            ghcr.io/slin86/ffw-trainingsmap:latest
