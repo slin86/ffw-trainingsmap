@@ -255,7 +255,8 @@ document.addEventListener('DOMContentLoaded', function () {
         allVehicles = vehicles;
         
         var vehicleList = document.getElementById('vehicle-list');
-        var locationList = document.getElementById('location-list');
+        var stationList = document.getElementById('station-list');
+        var incidentList = document.getElementById('incident-list');
 
         // Sort vehicles by callsign
         var sortedVehicles = vehicles ? vehicles.slice().sort(function(a, b) {
@@ -290,22 +291,32 @@ document.addEventListener('DOMContentLoaded', function () {
             vehicleList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine Fahrzeuge</div>';
         }
 
-        // Format locations
-        locationList.innerHTML = '';
+        // Separate stations and incidents
+        var stations = [];
+        var incidents = [];
         if (locations && locations.length > 0) {
-            var sortedLocations = locations.slice().sort(function(a, b) {
+            locations.forEach(function(l) {
+                if (l.location_type === 'STATION') {
+                    stations.push(l);
+                } else {
+                    incidents.push(l);
+                }
+            });
+        }
+
+        // Format stations
+        stationList.innerHTML = '';
+        if (stations.length > 0) {
+            var sortedStations = stations.slice().sort(function(a, b) {
                 return a.name.localeCompare(b.name);
             });
-            sortedLocations.forEach(function (l) {
-                var isStation = l.location_type === 'STATION';
-                var typeIconClass = isStation ? 'type-station' : 'type-incident';
-                
+            sortedStations.forEach(function (l) {
                 var item = document.createElement('div');
                 item.className = 'list-item';
                 item.innerHTML = '<div>' +
-                    '<span class="location-type ' + typeIconClass + '"></span>' +
+                    '<span class="location-type type-station"></span>' +
                     '<strong>' + l.name + '</strong><br/>' +
-                    '<small>(' + (isStation ? 'Feuerwache' : 'Einsatzort') + ')' + '</small>' +
+                    '<small>(' + (l.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + ')' + '</small>' +
                 '</div>';
                 
                 item.onclick = function() {
@@ -314,10 +325,37 @@ document.addEventListener('DOMContentLoaded', function () {
                         map.flyTo(locationMarkers[l.id].getLatLng(), 14);
                     }
                 };
-                locationList.appendChild(item);
+                stationList.appendChild(item);
             });
         } else {
-            locationList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine Orte</div>';
+            stationList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine Feuerwachen</div>';
+        }
+
+        // Format incidents
+        incidentList.innerHTML = '';
+        if (incidents.length > 0) {
+            var sortedIncidents = incidents.slice().sort(function(a, b) {
+                return a.name.localeCompare(b.name);
+            });
+            sortedIncidents.forEach(function (l) {
+                var item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = '<div>' +
+                    '<span class="location-type type-incident"></span>' +
+                    '<strong>' + l.name + '</strong><br/>' +
+                    '<small>(' + (l.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + ')' + '</small>' +
+                '</div>';
+                
+                item.onclick = function() {
+                    if (locationMarkers[l.id]) {
+                        locationMarkers[l.id].openPopup();
+                        map.flyTo(locationMarkers[l.id].getLatLng(), 14);
+                    }
+                };
+                incidentList.appendChild(item);
+            });
+        } else {
+            incidentList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine aktiven Einsatzorte</div>';
         }
     }
 
@@ -431,10 +469,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function fetchData() {
         var vehiclesPromise = fetch('/api/vehicles').then(function (response) { return response.json(); });
-        var locationsPromise = fetch('/api/locations').then(function (response) { return response.json(); });
+        var stationsPromise = fetch('/api/locations?type=STATION').then(function (response) { return response.json(); });
+        var incidentsPromise = fetch('/api/locations?type=INCIDENT&all=true').then(function (response) { return response.json(); });
 
-        Promise.all([vehiclesPromise, locationsPromise]).then(function (results) {
-            updateMap(results[0], results[1]);
+        Promise.all([vehiclesPromise, stationsPromise, incidentsPromise]).then(function (results) {
+            var vehicles = results[0];
+            var stations = results[1];
+            var incidents = results[2];
+            var allLocations = [];
+            if (stations && stations.length > 0) allLocations = allLocations.concat(stations);
+            if (incidents && incidents.length > 0) allLocations = allLocations.concat(incidents);
+            updateMap(results[0], allLocations);
         }).catch(function (err) {
             console.error('Failed to fetch data:', err);
         });

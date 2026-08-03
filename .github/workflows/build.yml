@@ -36,4 +36,6 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/slin86/ff-trainingskarte:v0.2.0
+          tags: |
+            ghcr.io/slin86/nilsholthues-web:${{ github.sha }}
+            ghcr.io/slin86/nilsholthues-web:latest

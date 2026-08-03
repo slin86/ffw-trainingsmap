@@ -11,6 +11,11 @@ public class Incident extends Location {
     @Column(nullable = false)
     private boolean active = true;
 
+    @Override
+    public String getLocationType() {
+        return "INCIDENT";
+    }
+
     public boolean isActive() {
         return active;
     }

@@ -36,7 +36,7 @@
                 <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
-                <div class="form-section">
+                <div>
                     <h2>Neuen Ort anlegen</h2>
                     <form method="post" th:action="@{/admin/locations}">
                         <input type="hidden" id="createLat" name="lat" />

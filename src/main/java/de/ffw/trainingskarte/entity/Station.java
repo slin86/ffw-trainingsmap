@@ -7,4 +7,9 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("STATION")
 public class Station extends Location {
 
+    @Override
+    public String getLocationType() {
+        return "STATION";
+    }
+
 }

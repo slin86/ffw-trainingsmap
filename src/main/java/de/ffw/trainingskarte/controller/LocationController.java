@@ -59,7 +59,11 @@ public class LocationController {
                 .stream()
                 .filter(s -> s instanceof Station)
                 .toList();
-        return ResponseEntity.ok(stations);
+        List<Incident> incidents = incidentRepository.findByActiveTrue();
+        
+        var allLocations = new java.util.ArrayList<>(stations);
+        allLocations.addAll(incidents);
+        return ResponseEntity.ok(allLocations);
     }
 
     @GetMapping("/{id}")

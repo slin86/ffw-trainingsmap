@@ -1,5 +1,7 @@
 package de.ffw.trainingskarte.entity;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
@@ -14,6 +16,7 @@ import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -38,10 +41,13 @@ public abstract class Location {
     protected OffsetDateTime createdAt;
 
     @OneToMany(mappedBy = "location")
+    @JsonBackReference
     protected List<Vehicle> vehicles = new ArrayList<>();
 
     public Location() {
     }
+
+    public abstract String getLocationType();
 
     public Long getId() {
         return id;
