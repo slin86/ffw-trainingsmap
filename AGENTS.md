@@ -16,7 +16,8 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - Constructor Injection, kein Lombok, keine `@Setter`/`@Autowired` auf Feldern
 - UI-Texte auf Deutsch, Code und Variablen auf Englisch
 - Kein `javax.*`; nur `jakarta.*` Namespaces
-- Fahrzeug-Status: 1 = Frei ueber Funk, 2 = Frei auf Wache, 3 = Einsatz uebernommen, 4 = Am Einsatzort, 6 = Ausser Dienst
+- Fahrzeug-Status: 1 = Frei ueber Funk, 2 = Frei auf Wache, 3 = Einsatz uebernommen, 4 = Am Einsatzort, 6 = Ausser
+  Dienst
 - Status-Farben: gruen (1, 2), rot (3, 4), grau (6)
 - Positions-Validierung: lat 53.3-53.8, lng 9.6-10.4 (Hamburg-Gebiet)
 - Method Security: `@PreAuthorize` verwenden (nicht `@Secured` - ist ohne `securedEnabled` wirkungslos)
@@ -25,6 +26,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 ## Current State
 
 ### M1: Projektgeruest (complete)
+
 - [x] Boot 4.1.0 + Gradle Kotlin DSL + Java 21 Toolchain
 - [x] Flyway Migration `V1`: Tabellen `vehicle` und `app_user`
 - [x] JPA-Entitaeten + Spring Data Repositories
@@ -34,6 +36,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] DataSeeder (`dev`-Profil): admin/admin, viewer/viewer + 4 Hamburger FF-Fahrzeuge
 
 ### M2: Auth & REST API (complete)
+
 - [x] Spring Session Redis via Boot-4-Starter (Cookie "SESSION", nicht JSESSIONID)
 - [x] Deutsche Login-Seite (`/login`, Thymeleaf)
 - [x] REST API `VehicleController` unter `/api/vehicles` (GET fuer alle, Schreibzugriffe ADMIN)
@@ -41,11 +44,13 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Unit- und `@WebMvcTest`-Abdeckung inkl. Rollen-Regeln
 
 ### M3: Kartenansicht (complete)
+
 - [x] `MapController` served Karte auf `/`
 - [x] `map.html`: Vollbild-Leaflet, Header mit Nutzername, Logout, Verwaltungs-Link (ADMIN)
 - [x] `map.js`: Marker mit Status-Farben, deutsche Popups, 10s-Polling
 
 ### M4: Admin UI & Tests (complete)
+
 - [x] `AdminVehicleController`, `AdminUserController` mit deutschen Flash-Messages
 - [x] Templates: Fahrzeugliste, Fahrzeug-Bearbeitung (Leaflet Click-to-Set-Position), Nutzerverwaltung
 - [x] Eigenes CSS (`/css/admin.css`), kein Framework
@@ -55,6 +60,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] 31 Tests gruen
 
 ### M5: Statuswechsel via Karte (complete)
+
 - [x] Endpoint PUT `/api/vehicles/{id}/status` - erlaubt fuer VIEWER **und** ADMIN
 - [x] SecurityConfig: Status-Route vor der allgemeinen ADMIN-Regel fuer `/api/vehicles/**`
 - [x] Status-Buttons im Marker-Popup, sofortiges Marker-Update nach Wechsel
@@ -64,7 +70,9 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Tests: Status-Validierung, VIEWER darf Status setzen aber sonst 403
 
 ### M7: Single-Table-Inheritance fuer Location (complete)
-- [x] Flyway Migration `V3`: Tabelle `location` mit `location_type`, `name`, lat/lng (Hamburg-Constraints), `active`, `created_at`
+
+- [x] Flyway Migration `V3`: Tabelle `location` mit `location_type`, `name`, lat/lng (Hamburg-Constraints), `active`,
+  `created_at`
 - [x] Nullable `location_id` FK auf `vehicle` - NULL bedeutet "unterwegs"
 - [x] Abstrakte Entity `Location` mit `@Entity + @Inheritance(SINGLE_TABLE) + @DiscriminatorColumn`
 - [x] Subklassen `Station` (STATION, immer aktiv) und `Incident` (INCIDENT, plus Feld `active`)
@@ -73,6 +81,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] H2 f&uuml;r Tests hinzugef&uuml;gt, Migration tested gegen lokaler Postgres (V3 laeuft)
 
 ### M6: Deployment in k3s (complete)
+
 - [x] Multi-Stage Dockerfile (`eclipse-temurin:21-jdk` Build, `:21-jre` Runtime, non-root User)
 - [x] GitHub-Actions-Pipeline: baut und pusht `ghcr.io/slin86/ff-trainingskarte`
 - [x] `application-prod.yml`: Seeder aus, Flyway an
@@ -85,6 +94,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Erster Admin manuell per SQL angelegt (BCrypt-Hash, `$2a$`, role ohne ROLE_-Praefix)
 
 ### M8: Karte mit Location-Markern (complete)
+
 - [x] GET /api/locations beim Laden der Karte fuer Stationen + aktive Incidents
 - [x] Location Marker (blau f&uuml;r Station, gelb f&uuml;r active Incident)
 - [x] Fahrzeuge mit location_id: Marker an Location-Koordinaten
@@ -92,28 +102,39 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Popup pro Location zeigt Name + Typ + Listen der zugewiesenen Fahrzeuge
 
 ### M9: Admin UI Sidebar (complete)
+
 - [x] Gemeinsame Sidebar f&uuml;r Admin-Bereich mit Nav (Fahrzeuge, Nutzer, Orte)
 - [x] Aktueller Bereich optisch markiert
 - [x] AdminLocationController: CRUD f&uuml;r Stations + Incidents
 - [x] Toggle active Status nur f&uuml;r Incidents
 
 ### M10: Drag-and-Drop Positionierung (complete)
+
 - [x] PATCH /api/vehicles/{id}/position (ADMIN-only, Bounds validieren)
 - [x] Fahrzeug-Marker draggable nur als ADMIN
 - [x] dragend: PATCH -> neue Position speichern
 - [x] Fehler fallen Marker auf alte Position zur&uuml;ck
 
 ### M11: Location Vehicle Zuweisung (complete)
+
 - [x] Dropdown in Station/Incident-Popup fuer ADMIN sichtbar
 - [x] Auswahl alle nicht-zugeordneten Fahrzeuge
 - [x] Option "Unterwegs" (null) entfernt Zuordnung direkt
 - [x] onChange: PATCH /api/vehicles/{id}/location
 
 ### M12: LocationController Refactoring (complete)
+
 - [x] LocationController deleted, replaced by separate StationController + IncidentController
 - [x] GET /api/stations - liefert alle Stationen mit Fahrzeugen
 - [x] GET /api/incidents?all=true - liefert alle Incidents, ?all=false nur aktive
 - [x] map.js: API-Calls angepasst auf /api/stations und /api/incidents
+
+### M13: AdminLocationController Refactoring (complete)
+
+- [x] AdminLocationController split into separate AdminStationController + AdminIncidentController
+- [x] Separate pages: `/admin/stations` and `/admin/incidents`
+- [x] Templates: stations.html, incidents.html with sidebar navigation
+- [x] Fix type casting issue for LocationRepository.findById()
 
 ## Noch offen
 
@@ -122,6 +143,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - Station hat kein `active`-Flag, nur Incident.
 
 ## Guardrails
+
 - **Englisch** Code and Dokumentation werden in Englisch geschrieben. Kein Deutsch.
 - **Scope:** Nur die im aktuellen Prompt genannten Deliverables umsetzen.
   Verbesserungsideen als Vorschlag am Ende der Antwort nennen, NICHT umsetzen.
@@ -154,3 +176,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
   Shell-Textmanipulation ist auf macOS (BSD-Tools) fehleranfällig.
 - Ausschliesslich Pfade relativ zum Projekt-Root. Keine absoluten
   /Users/...-Pfade konstruieren.
+- Java: Spotless oder Checkstyle als Gradle-Plugin, das der Agent bei jedem Build "for free" mitgeprüft bekommt (in
+  ./gradlew build eingehängt) – zwingt zumindest Formatierung/einfache Smells, ohne dass du das manuell reviewen musst.
+- JS: ESLint mit ein paar strengen Regeln (z. B. no-duplicate-case, Komplexitätsgrenzen pro Funktion) – bei map.js mit
+  seinen sehr langen Funktionen (updateMap, updateSidebar) würde das schon beim Schreiben auffallen.

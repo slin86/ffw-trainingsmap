@@ -7,8 +7,11 @@
             <li th:class="${currentPage == 'users' ? 'active' : ''}">
                 <a th:href="@{/admin/users}">Nutzer</a>
             </li>
-            <li th:class="${currentPage == 'locations' ? 'active' : ''}">
-                <a th:href="@{/admin/locations}">Orte</a>
+            <li th:class="${currentPage == 'stations' ? 'active' : ''}">
+                <a th:href="@{/admin/stations}">Feuerwachen</a>
+            </li>
+            <li th:class="${currentPage == 'incidents' ? 'active' : ''}">
+                <a th:href="@{/admin/incidents}">Einsatzorte</a>
             </li>
         </ul>
     </nav>

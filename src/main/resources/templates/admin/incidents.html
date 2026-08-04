@@ -2,56 +2,37 @@
 <html xmlns:th="https://www.thymeleaf.org" lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Orte - Verwaltung</title>
-        <link rel="stylesheet" th:href="@{/css/admin.css}" />
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    </head>
+    <title>Einsatzorte - Verwaltung</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
 <body>
     <div class="admin-page">
-        <aside class="admin-sidebar">
-            <nav class="admin-nav">
-                <ul>
-                    <li th:class="${currentPage == 'vehicles' ? 'active' : ''}">
-                        <a th:href="@{/admin/vehicles}">Fahrzeuge</a>
-                    </li>
-                    <li th:class="${currentPage == 'users' ? 'active' : ''}">
-                        <a th:href="@{/admin/users}">Nutzer</a>
-                    </li>
-                    <li th:class="${currentPage == 'locations' ? 'active' : ''}">
-                        <a th:href="@{/admin/locations}">Orte</a>
-                    </li>
-                </ul>
-            </nav>
-            <div class="admin-sidebar-footer">
-                <a th:href="@{/}">&larr; Karte anzeigen</a>
-            </div>
-        </aside>
+        <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
         <main class="admin-content">
             <div class="page-header">
-                <h1>Orte verwalten</h1>
+                <h1>Einsatzorte verwalten</h1>
                 <a th:href="@{/}">&larr; Karte anzeigen</a>
             </div>
             <div class="container">
                 <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
+                <div style="margin-bottom: 1rem;">
+                    <a th:href="@{/admin/incidents}" class="btn btn-secondary">Nur Aktive</a>
+                    <a th:href="@{/admin/incidents(all=true)}" class="btn btn-secondary" th:classappend="${showAll} ? 'btn-active' : ''">Alle Anzeigen</a>
+                </div>
+
                 <div>
-                    <h2>Neuen Ort anlegen</h2>
-                    <form method="post" th:action="@{/admin/locations}">
+                    <h2>Neuen Einsatzort anlegen</h2>
+                    <form method="post" th:action="@{/admin/incidents}">
                         <input type="hidden" id="createLat" name="lat" />
                         <input type="hidden" id="createLng" name="lng" />
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="type">Typ</label>
-                                <select id="type" name="type" required>
-                                    <option value="STATION">Feuerwache</option>
-                                    <option value="INCIDENT">Einsatzort</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
                                 <label for="name">Name</label>
-                                <input type="text" id="name" name="name" required placeholder="z.B. Feuerwache 1" />
+                                <input type="text" id="name" name="name" required placeholder="z.B. Brand in Hafen City" />
                             </div>
                         </div>
                         <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
@@ -63,29 +44,7 @@
                     </form>
                 </div>
 
-                <h2>Feuerwachen (Stationen)</h2>
-                <table th:if="${stations != null and !stations.empty}">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Koordinaten</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="s : ${stations}">
-                            <td><strong th:text="${s.name}"></strong></td>
-                            <td><span th:text="${#numbers.formatDecimal(s.lat, 4, 2)} + ', ' + ${#numbers.formatDecimal(s.lng, 4, 2)}"></span></td>
-                            <td class="actions">
-                                <form method="post" th:action="@{/admin/locations/{id}/delete(id=${s.id})}" style="display:inline;" class="confirm-form" onsubmit="return confirm('Ort wirklich loeschen?')">
-                                    <button type="submit">Loeschen</button>
-                                </form>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h2>Einsatzorte (Incidents)</h2>
+                <h2>Einsatzorte</h2>
                 <table th:if="${incidents != null and !incidents.empty}">
                     <thead>
                         <tr>
@@ -104,19 +63,18 @@
                             </td>
                             <td><span th:text="${#numbers.formatDecimal(i.lat, 4, 2)} + ', ' + ${#numbers.formatDecimal(i.lng, 4, 2)}"></span></td>
                             <td class="actions">
-                                <form method="post" th:action="@{/admin/locations/toggle/{id}(id=${i.id})}" style="display:inline;" class="confirm-form">
+                                <form method="post" th:action="@{/admin/incidents/{id}/toggle(id=${i.id})}" style="display:inline;" class="confirm-form">
                                     <button type="submit" th:text="${i.active} ? 'Deaktivieren' : 'Aktivieren'"></button>
                                 </form>
-                                <form method="post" th:action="@{/admin/locations/{id}/delete(id=${i.id})}" style="display:inline;" class="confirm-form" onsubmit="return confirm('Ort wirklich loeschen?')">
-                                    <button type="submit">Loeschen</button>
+                                <form method="post" th:action="@{/admin/incidents/{id}/delete(id=${i.id})}" style="display:inline;" class="confirm-form" onsubmit="return confirm('Einsatzort wirklich löschen?')">
+                                    <button type="submit">Löschen</button>
                                 </form>
                             </td>
                         </tr>
                     </tbody>
                 </table>
 
-                <p th:if="${stations == null or stations.empty}" style="color:#666;">Keine Feuerwachen gefunden.</p>
-                <p th:if="${incidents == null or incidents.empty}" style="color:#666;">Keine aktiven Einsatzorte gefunden.</p>
+                <p th:if="${incidents == null or incidents.empty}" style="color:#666;" th:text="${showAll} ? 'Keine Einsatzorte gefunden.' : 'Keine aktiven Einsatzorte gefunden.'"></p>
             </div>
 
             <script th:inline="javascript">
@@ -144,5 +102,8 @@
                     });
                 });
             </script>
+        </main>
+    </div>
 </body>
 </html>
+
