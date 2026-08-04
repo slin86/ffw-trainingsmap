@@ -1,11 +1,11 @@
-<aside class="admin-sidebar">
+<aside class="admin-sidebar" th:fragment="admin-sidebar">
     <nav class="admin-nav">
         <ul>
-            <li th:class="${currentPage == 'vehicles' ? 'active' : ''}">
-                <a th:href="@{/admin/vehicles}">Fahrzeuge</a>
-            </li>
             <li th:class="${currentPage == 'users' ? 'active' : ''}">
                 <a th:href="@{/admin/users}">Nutzer</a>
+            </li>
+            <li th:class="${currentPage == 'vehicles' ? 'active' : ''}">
+                <a th:href="@{/admin/vehicles}">Fahrzeuge</a>
             </li>
             <li th:class="${currentPage == 'stations' ? 'active' : ''}">
                 <a th:href="@{/admin/stations}">Feuerwachen</a>

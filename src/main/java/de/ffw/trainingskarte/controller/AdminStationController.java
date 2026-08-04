@@ -2,7 +2,7 @@ package de.ffw.trainingskarte.controller;
 
 import de.ffw.trainingskarte.entity.Location;
 import de.ffw.trainingskarte.entity.Station;
-import de.ffw.trainingskarte.repository.LocationRepository;
+import de.ffw.trainingskarte.repository.StationRepository;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
@@ -20,18 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminStationController {
 
-    private final LocationRepository locationRepository;
+    private final StationRepository stationRepository;
 
-    public AdminStationController(LocationRepository locationRepository) {
-        this.locationRepository = locationRepository;
+    public AdminStationController(StationRepository stationRepository) {
+        this.stationRepository = stationRepository;
     }
 
     @GetMapping
     public String list(Model model, HttpSession session) {
-        List<Station> stations = locationRepository.findAll()
+        List<Station> stations = stationRepository.findAll()
                 .stream()
-                .filter(l -> l instanceof Station)
-                .map(Station.class::cast)
                 .toList();
 
         model.addAttribute("stations", stations);
@@ -59,7 +57,7 @@ public class AdminStationController {
         station.setName(name);
         station.setLat(lat);
         station.setLng(lng);
-        locationRepository.save(station);
+        stationRepository.save(station);
 
         session.setAttribute("flashMessage", "Feuerwache '" + name + "' angelegt");
         return "redirect:/admin/stations";
@@ -67,16 +65,12 @@ public class AdminStationController {
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, HttpSession session) {
-        Optional<Location> locationOpt = (Optional<Location>) locationRepository.findById(id);
-        Location location = locationOpt.orElseThrow(() -> new IllegalArgumentException("Ort nicht gefunden: " + id));
+        Optional<Station> locationOpt = stationRepository.findById(id);
+        Location station = locationOpt.orElseThrow(() -> new IllegalArgumentException("Ort nicht gefunden: " + id));
 
-        if (!(location instanceof Station station)) {
-            session.setAttribute("flashError", "Keine Feuerwache gefunden");
-            return "redirect:/admin/stations";
-        }
 
         String name = station.getName();
-        locationRepository.deleteById(id);
+        stationRepository.deleteById(id);
 
         session.setAttribute("flashMessage", "Feuerwache '" + name + "' geloscht");
         return "redirect:/admin/stations";
