@@ -104,10 +104,16 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Fehler fallen Marker auf alte Position zur&uuml;ck
 
 ### M11: Location Vehicle Zuweisung (complete)
-- [x] Dropdown in Station/Incident-Popup f&uuml;r ADMIN sichtbar
+- [x] Dropdown in Station/Incident-Popup fuer ADMIN sichtbar
 - [x] Auswahl alle nicht-zugeordneten Fahrzeuge
 - [x] Option "Unterwegs" (null) entfernt Zuordnung direkt
 - [x] onChange: PATCH /api/vehicles/{id}/location
+
+### M12: LocationController Refactoring (complete)
+- [x] LocationController deleted, replaced by separate StationController + IncidentController
+- [x] GET /api/stations - liefert alle Stationen mit Fahrzeugen
+- [x] GET /api/incidents?all=true - liefert alle Incidents, ?all=false nur aktive
+- [x] map.js: API-Calls angepasst auf /api/stations und /api/incidents
 
 ## Noch offen
 

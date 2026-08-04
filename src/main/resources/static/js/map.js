@@ -469,8 +469,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function fetchData() {
         var vehiclesPromise = fetch('/api/vehicles').then(function (response) { return response.json(); });
-        var stationsPromise = fetch('/api/locations?type=STATION').then(function (response) { return response.json(); });
-        var incidentsPromise = fetch('/api/locations?type=INCIDENT&all=true').then(function (response) { return response.json(); });
+        var stationsPromise = fetch('/api/stations').then(function (response) { return response.json(); });
+        var incidentsPromise = fetch('/api/incidents?all=true').then(function (response) { return response.json(); });
 
         Promise.all([vehiclesPromise, stationsPromise, incidentsPromise]).then(function (results) {
             var vehicles = results[0];
