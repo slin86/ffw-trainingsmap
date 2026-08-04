@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS scene_vehicle;
+DROP TABLE IF EXISTS scene;

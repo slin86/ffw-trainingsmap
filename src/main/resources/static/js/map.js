@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
         sidebarCollapsed = !sidebarCollapsed;
         var overlay = document.getElementById('sidebar');
         var btn = document.getElementById('toggleBtn');
-        
+
         if (sidebarCollapsed) {
             overlay.classList.add('sidebar-collapsed');
             btn.textContent = '▲';
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function createLocationPopupContent(location) {
         var html = '<b>' + location.name + '</b><br/>';
         html += '<i>Typ:</i> ' + (location.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + '<br/>';
-        
+
         if (location.vehicles && location.vehicles.length > 0) {
             html += '<hr/><b>Fahrzeuge:</b><br/>';
             location.vehicles.forEach(function (v) {
@@ -220,16 +220,16 @@ document.addEventListener('DOMContentLoaded', function () {
             html += '<label>Fahrzeug zuweisen:</label>';
             html += '<select id="assign-vehicle-' + location.id + '" onchange="window.assignSelectedVehicle(' + location.id + ')">';
             html += '<option value="">Bitte wählen...</option>';
-            
+
             // Filter out vehicles already assigned to this location
             var assignedIds = (location.vehicles || []).map(function(v) { return v.id; });
-            
+
             allVehicles.forEach(function (v) {
                 if (!assignedIds.includes(v.id)) {
                     html += '<option value="' + v.id + '">' + v.callsign + ' (' + (statusLabels[v.status] || v.status) + ')</option>';
                 }
             });
-            
+
             html += '</select></div>';
         }
 
@@ -246,14 +246,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var vehicleId = parseInt(select.value);
         assignVehicleToLocation(vehicleId, locationId);
-        
+
         // Reset to default option
         select.value = '';
     };
 
     function updateSidebar(vehicles, locations) {
         allVehicles = vehicles;
-        
+
         var vehicleList = document.getElementById('vehicle-list');
         var stationList = document.getElementById('station-list');
         var incidentList = document.getElementById('incident-list');
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
             vehicles.forEach(function (v) {
                 var wasAtLocation = v.location && v.location.id;
                 var statusColor = getStatusColor(v.status);
-                
+
                 var item = document.createElement('div');
                 item.className = 'list-item';
                 item.innerHTML = '<div class="vehicle-info">' +
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<span class="vehicle-status">' + (statusLabels[v.status] || v.status) + '</span>' +
                     (wasAtLocation ? '' : '<span class="underway">unterwegs</span>') +
                 '</div>';
-                
+
                 item.onclick = function() {
                     if (markers[v.id]) {
                         markers[v.id].openPopup();
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<strong>' + l.name + '</strong><br/>' +
                     '<small>(' + (l.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + ')' + '</small>' +
                 '</div>';
-                
+
                 item.onclick = function() {
                     if (locationMarkers[l.id]) {
                         locationMarkers[l.id].openPopup();
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<strong>' + l.name + '</strong><br/>' +
                     '<small>(' + (l.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + ')' + '</small>' +
                 '</div>';
-                
+
                 item.onclick = function() {
                     if (locationMarkers[l.id]) {
                         locationMarkers[l.id].openPopup();
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateMap(vehicles, locations) {
         allVehicles = vehicles;
-        
+
         var currentVehicleIds = {};
         var currentLocationIds = {};
 
@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     draggable: isEditable
                 });
                 markers[v.id].bindPopup(createVehiclePopupContent(v));
-                
+
                 if (isEditable) {
                     var oldLatLng;
                     markers[v.id].on('dragstart', function() {
@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             });
                     });
                 }
-                
+
                 markers[v.id].addTo(map);
             } else {
                 var isEditable = isAdmin();
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 markers[v.id].setStyle({ color: getStatusColor(v.status), fillColor: getStatusColor(v.status) });
                 markers[v.id].setPopupContent(createVehiclePopupContent(v));
-                
+
                 // Update draggable state
                 if (markers[v.id].options.draggable !== isEditable) {
                     markers[v.id].setOptions({ draggable: isEditable });
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var allLocations = [];
             if (stations && stations.length > 0) allLocations = allLocations.concat(stations);
             if (incidents && incidents.length > 0) allLocations = allLocations.concat(incidents);
-            updateMap(results[0], allLocations);
+            updateMap(vehicles, allLocations);
         }).catch(function (err) {
             console.error('Failed to fetch data:', err);
         });
