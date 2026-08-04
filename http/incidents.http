@@ -1,0 +1,7 @@
+### API requests for ff-trainingskarte
+# Run with vscode-rest-client or similar tool
+
+@host = http://localhost:8080
+
+### List all vehicles (GET) → 200 OK
+GET {{host}}/api/incidents

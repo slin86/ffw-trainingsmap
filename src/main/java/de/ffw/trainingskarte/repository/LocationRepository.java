@@ -8,9 +8,6 @@ import java.util.List;
 
 public interface LocationRepository<L extends Location> extends JpaRepository<L, Long> {
 
-    @Query("SELECT l FROM Location l LEFT JOIN FETCH l.vehicles")
-    List<L> findAllWithVehicles();
-
     List<L> findAll();
 
 }

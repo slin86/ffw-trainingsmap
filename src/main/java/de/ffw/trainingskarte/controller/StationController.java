@@ -26,9 +26,7 @@ public class StationController {
 
     @GetMapping
     public List<Station> findAllWithVehicles() {
-        return stationRepository.findAllWithVehicles()
-                .stream()
-                .toList();
+        return stationRepository.findAll();
     }
 
     @GetMapping("/{id}")

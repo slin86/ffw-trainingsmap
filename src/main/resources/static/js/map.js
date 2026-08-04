@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
         select.value = '';
     };
 
-    function updateSidebar(vehicles, locations) {
+    function updateSidebar(vehicles, stations, incidents) {
         allVehicles = vehicles;
 
         var vehicleList = document.getElementById('vehicle-list');
@@ -291,22 +291,9 @@ document.addEventListener('DOMContentLoaded', function () {
             vehicleList.innerHTML = '<div class="list-item" style="text-align:center;color:#666;">Keine Fahrzeuge</div>';
         }
 
-        // Separate stations and incidents
-        var stations = [];
-        var incidents = [];
-        if (locations && locations.length > 0) {
-            locations.forEach(function(l) {
-                if (l.location_type === 'STATION') {
-                    stations.push(l);
-                } else {
-                    incidents.push(l);
-                }
-            });
-        }
-
         // Format stations
         stationList.innerHTML = '';
-        if (stations.length > 0) {
+        if (stations && stations.length > 0) {
             var sortedStations = stations.slice().sort(function(a, b) {
                 return a.name.localeCompare(b.name);
             });
@@ -333,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Format incidents
         incidentList.innerHTML = '';
-        if (incidents.length > 0) {
+        if (incidents && incidents.length > 0) {
             var sortedIncidents = incidents.slice().sort(function(a, b) {
                 return a.name.localeCompare(b.name);
             });
@@ -359,11 +346,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function updateMap(vehicles, locations) {
+    function updateMap(vehicles, stations, incidents) {
         allVehicles = vehicles;
 
         var currentVehicleIds = {};
-        var currentLocationIds = {};
+        var currentStationIds = {};
+        var currentIncidentIds = {};
 
         // Process vehicles
         vehicles.forEach(function (v) {
@@ -429,18 +417,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Process locations
-        if (locations) {
-            locations.forEach(function (loc) {
-                currentLocationIds[loc.id] = loc;
+        // Process stations
+        if (stations) {
+            stations.forEach(function (loc) {
+                currentStationIds[loc.id] = loc;
 
                 if (!locationMarkers[loc.id]) {
-                    var isStation = loc.location_type === 'STATION';
                     locationMarkers[loc.id] = L.circleMarker([loc.lat, loc.lng], {
                         radius: 15,
-                        color: isStation ? '#1976d2' : '#fbc02d',
+                        color: '#1976d2',
                         weight: 3,
-                        fillColor: isStation ? '#4fc3f7' : '#fff9c4',
+                        fillColor: '#4fc3f7',
                         fillOpacity: 0.8
                     });
                     locationMarkers[loc.id].bindPopup(createLocationPopupContent(loc));
@@ -449,14 +436,48 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (locationMarkers[loc.id].getLatLng().lat !== loc.lat || locationMarkers[loc.id].getLatLng().lng !== loc.lng) {
                         locationMarkers[loc.id].setLatLng([loc.lat, loc.lng]);
                     }
-                    locationMarkers[loc.id].setStyle({ color: isStation ? '#1976d2' : '#fbc02d', fillColor: isStation ? '#4fc3f7' : '#fff9c4' });
+                    locationMarkers[loc.id].setStyle({ color: '#1976d2', fillColor: '#4fc3f7' });
                     locationMarkers[loc.id].setPopupContent(createLocationPopupContent(loc));
                 }
             });
 
-            // Remove old location markers
+            // Remove old station markers
             Object.keys(locationMarkers).forEach(function (id) {
-                if (!currentLocationIds[id]) {
+                if (!currentStationIds[id] && !currentIncidentIds[id]) {
+                    map.removeLayer(locationMarkers[id]);
+                    delete locationMarkers[id];
+                }
+            });
+        }
+
+        // Process incidents
+        if (incidents) {
+            incidents.forEach(function (loc) {
+                currentIncidentIds[loc.id] = loc;
+
+                var isStation = false;
+                if (!locationMarkers[loc.id]) {
+                    locationMarkers[loc.id] = L.circleMarker([loc.lat, loc.lng], {
+                        radius: 15,
+                        color: '#fbc02d',
+                        weight: 3,
+                        fillColor: '#fff9c4',
+                        fillOpacity: 0.8
+                    });
+                    locationMarkers[loc.id].bindPopup(createLocationPopupContent(loc));
+                    locationMarkers[loc.id].addTo(map);
+                } else {
+                    if (locationMarkers[loc.id].getLatLng().lat !== loc.lat || locationMarkers[loc.id].getLatLng().lng !== loc.lng) {
+                        locationMarkers[loc.id].setLatLng([loc.lat, loc.lng]);
+                    }
+                    locationMarkers[loc.id].setStyle({ color: '#fbc02d', fillColor: '#fff9c4' });
+                    locationMarkers[loc.id].setPopupContent(createLocationPopupContent(loc));
+                }
+            });
+
+            // Remove old incident markers
+            Object.keys(locationMarkers).forEach(function (id) {
+                if (!currentStationIds[id] && !currentIncidentIds[id]) {
                     map.removeLayer(locationMarkers[id]);
                     delete locationMarkers[id];
                 }
@@ -464,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Update sidebar
-        updateSidebar(vehicles, locations);
+        updateSidebar(vehicles, stations, incidents);
     }
 
     function fetchData() {
@@ -476,10 +497,7 @@ document.addEventListener('DOMContentLoaded', function () {
             var vehicles = results[0];
             var stations = results[1];
             var incidents = results[2];
-            var allLocations = [];
-            if (stations && stations.length > 0) allLocations = allLocations.concat(stations);
-            if (incidents && incidents.length > 0) allLocations = allLocations.concat(incidents);
-            updateMap(vehicles, allLocations);
+            updateMap(vehicles, stations, incidents);
         }).catch(function (err) {
             console.error('Failed to fetch data:', err);
         });
