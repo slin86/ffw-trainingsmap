@@ -44,8 +44,24 @@ public class StationController {
         station.setName(request.name());
         station.setLat(request.lat());
         station.setLng(request.lng());
+        station.setDescription(request.description());
         var location = stationRepository.save(station);
         return ResponseEntity.status(HttpStatus.CREATED).body(location);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Station> update(@PathVariable Long id, @RequestBody LocationRequest request) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Station not found: " + id));
+
+        station.setName(request.name());
+        station.setLat(request.lat());
+        station.setLng(request.lng());
+        station.setDescription(request.description());
+
+        station = stationRepository.save(station);
+        return ResponseEntity.ok(station);
     }
 
     @DeleteMapping("/{id}")

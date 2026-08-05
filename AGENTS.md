@@ -136,6 +136,28 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Templates: stations.html, incidents.html with sidebar navigation
 - [x] Fix type casting issue for LocationRepository.findById()
 
+### M14: Description-Feld & editierbare Location-Formulare (complete)
+
+- [x] Flyway Migration `V5`: nullable Spalte `description` (TEXT) auf `location`
+- [x] `Location.java` um `description` (Getter/Setter) erweitert
+- [x] `LocationRequest`-DTO um `description` erweitert; `StationController`
+  (inkl. neuem `PUT /api/stations/{id}`) und `IncidentController`
+  (create/update) setzen/liefern `description`
+- [x] Formular auf eigene Seite ausgelagert: `admin/location-form.html`,
+  geteilt zwischen `AdminStationController` und `AdminIncidentController`
+  (Model-Attribute `location`, `locationType`, `formAction` steuern
+  Anlegen- vs. Bearbeiten-Modus)
+- [x] `GET /admin/stations/new` und `GET /admin/incidents/new` fuer Anlage,
+  `admin/stations.html`/`admin/incidents.html` zeigen nur noch Liste +
+  Button "Neuen Ort anlegen"
+- [x] `GET /admin/stations/{id}/edit` und `GET /admin/incidents/{id}/edit`
+  laden das Formular im Edit-Modus (Positions-Marker an vorhandenen
+  Koordinaten, Typ-Feld disabled)
+- [x] `POST /admin/stations/{id}` und `POST /admin/incidents/{id}`
+  aktualisieren name/lat/lng/description (Incident zusaetzlich `active`
+  ueber Checkbox+Hidden-Feld-Trick)
+- [x] "Bearbeiten"-Link je Zeile in beiden Verwaltungstabellen
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das

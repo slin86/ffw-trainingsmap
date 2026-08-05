@@ -48,18 +48,59 @@ public class AdminStationController {
         return "admin/stations";
     }
 
+    @GetMapping("/new")
+    public String newForm(Model model) {
+        model.addAttribute("location", null);
+        model.addAttribute("locationType", "STATION");
+        model.addAttribute("formAction", "/admin/stations");
+        return "admin/location-form";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Feuerwache nicht gefunden: " + id));
+
+        model.addAttribute("location", station);
+        model.addAttribute("locationType", "STATION");
+        model.addAttribute("formAction", "/admin/stations/" + id);
+        return "admin/location-form";
+    }
+
     @PostMapping
     public String create(@RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
         Station station = new Station();
         station.setName(name);
         station.setLat(lat);
         station.setLng(lng);
+        station.setDescription(description);
         stationRepository.save(station);
 
         session.setAttribute("flashMessage", "Feuerwache '" + name + "' angelegt");
+        return "redirect:/admin/stations";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable Long id,
+                         @RequestParam String name,
+                         @RequestParam double lat,
+                         @RequestParam double lng,
+                         @RequestParam(required = false) String description,
+                         HttpSession session) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Feuerwache nicht gefunden: " + id));
+
+        station.setName(name);
+        station.setLat(lat);
+        station.setLng(lng);
+        station.setDescription(description);
+        stationRepository.save(station);
+
+        session.setAttribute("flashMessage", "Feuerwache '" + name + "' aktualisiert");
         return "redirect:/admin/stations";
     }
 

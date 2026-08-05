@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${location == null} ? 'Ort anlegen' : 'Ort bearbeiten'"></title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="admin-page">
+        <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
+        <main class="admin-content">
+            <div class="page-header">
+                <h1 th:if="${location == null and locationType == 'STATION'}">Neue Feuerwache anlegen</h1>
+                <h1 th:if="${location == null and locationType == 'INCIDENT'}">Neuen Einsatzort anlegen</h1>
+                <h1 th:if="${location != null and locationType == 'STATION'}">Feuerwache bearbeiten</h1>
+                <h1 th:if="${location != null and locationType == 'INCIDENT'}">Einsatzort bearbeiten</h1>
+                <a th:if="${locationType == 'STATION'}" th:href="@{/admin/stations}">&larr; Zurueck zur Liste</a>
+                <a th:if="${locationType == 'INCIDENT'}" th:href="@{/admin/incidents}">&larr; Zurueck zur Liste</a>
+            </div>
+            <div class="container">
+                <form method="post" th:action="@{${formAction}}" id="locationForm">
+                    <input type="hidden" id="lat" name="lat" th:value="${location != null ? location.lat : 53.5511}" />
+                    <input type="hidden" id="lng" name="lng" th:value="${location != null ? location.lng : 9.9937}" />
+
+                    <div class="form-section">
+                        <h2>Stammdaten</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="type">Typ</label>
+                                <select id="type" name="type" disabled>
+                                    <option value="STATION" th:selected="${locationType == 'STATION'}">Feuerwache</option>
+                                    <option value="INCIDENT" th:selected="${locationType == 'INCIDENT'}">Einsatzort</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="name">Name</label>
+                                <input type="text" id="name" name="name" required
+                                       th:value="${location != null ? location.name : ''}"
+                                       th:placeholder="${locationType == 'STATION'} ? 'z.B. Feuerwache 1' : 'z.B. Brand in Hafen City'" />
+                            </div>
+                        </div>
+                        <div class="form-row" th:if="${locationType == 'INCIDENT' and location != null}">
+                            <div class="form-group">
+                                <label for="active">
+                                    <input type="checkbox" id="active" name="active" value="true" th:checked="${location.active}" />
+                                    Aktiv
+                                </label>
+                                <input type="hidden" name="active" value="false" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="description">Beschreibung</label>
+                                <textarea id="description" name="description" rows="3"
+                                          placeholder="Optionale Beschreibung"
+                                          th:text="${location != null ? location.description : ''}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Position (auf der Karte klicken)</h2>
+                        <div id="position-map"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </form>
+            </div>
+
+            <script th:inline="javascript">
+                document.addEventListener('DOMContentLoaded', function() {
+                    var lat = /*[[${location != null ? location.lat : 53.5511}]]*/ 53.5511;
+                    var lng = /*[[${location != null ? location.lng : 9.9937}]]*/ 9.9937;
+
+                    var map = L.map('position-map').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+
+                    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                    marker.on('dragend', function(e) {
+                        var pos = e.target.getLatLng();
+                        document.getElementById('lat').value = pos.lat;
+                        document.getElementById('lng').value = pos.lng;
+                    });
+
+                    map.on('click', function(e) {
+                        marker.setLatLng(e.latlng);
+                        document.getElementById('lat').value = e.latlng.lat;
+                        document.getElementById('lng').value = e.latlng.lng;
+                    });
+
+                    var form = document.getElementById('locationForm');
+                    form.addEventListener('submit', function() {
+                        lat = parseFloat(document.getElementById('lat').value);
+                        lng = parseFloat(document.getElementById('lng').value);
+                        document.getElementById('lat').value = lat.toFixed(6);
+                        document.getElementById('lng').value = lng.toFixed(6);
+                    });
+                });
+            </script>
+        </main>
+    </div>
+</body>
+</html>

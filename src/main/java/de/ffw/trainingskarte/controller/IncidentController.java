@@ -45,6 +45,7 @@ public class IncidentController {
         incident.setLat(request.lat());
         incident.setLng(request.lng());
         incident.setActive(request.active() != null ? request.active() : true);
+        incident.setDescription(request.description());
         var location = incidentRepository.save(incident);
         return ResponseEntity.status(HttpStatus.CREATED).body(location);
     }
@@ -58,6 +59,7 @@ public class IncidentController {
         incident.setName(request.name());
         incident.setLat(request.lat());
         incident.setLng(request.lng());
+        incident.setDescription(request.description());
 
         if (request.active() != null) {
             incident.setActive(request.active());

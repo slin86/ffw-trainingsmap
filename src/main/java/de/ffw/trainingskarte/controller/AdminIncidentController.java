@@ -49,19 +49,62 @@ public class AdminIncidentController {
         return "admin/incidents";
     }
 
+    @GetMapping("/new")
+    public String newForm(Model model) {
+        model.addAttribute("location", null);
+        model.addAttribute("locationType", "INCIDENT");
+        model.addAttribute("formAction", "/admin/incidents");
+        return "admin/location-form";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Einsatzort nicht gefunden: " + id));
+
+        model.addAttribute("location", incident);
+        model.addAttribute("locationType", "INCIDENT");
+        model.addAttribute("formAction", "/admin/incidents/" + id);
+        return "admin/location-form";
+    }
+
     @PostMapping
     public String create(@RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
         Incident incident = new Incident();
         incident.setName(name);
         incident.setLat(lat);
         incident.setLng(lng);
+        incident.setDescription(description);
         incident.setActive(true);
         incidentRepository.save(incident);
 
         session.setAttribute("flashMessage", "Einsatzort '" + name + "' angelegt");
+        return "redirect:/admin/incidents";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable Long id,
+                         @RequestParam String name,
+                         @RequestParam double lat,
+                         @RequestParam double lng,
+                         @RequestParam(required = false) String description,
+                         @RequestParam(required = false) Boolean active,
+                         HttpSession session) {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Einsatzort nicht gefunden: " + id));
+
+        incident.setName(name);
+        incident.setLat(lat);
+        incident.setLng(lng);
+        incident.setDescription(description);
+        incident.setActive(active != null && active);
+        incidentRepository.save(incident);
+
+        session.setAttribute("flashMessage", "Einsatzort '" + name + "' aktualisiert");
         return "redirect:/admin/incidents";
     }
 
