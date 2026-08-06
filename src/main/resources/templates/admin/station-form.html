@@ -43,8 +43,8 @@
                 </form>
 
                 <form th:if="${station != null}" method="post" th:action="@{/admin/stations/{id}(id=${station.id})}">
-                    <input type="hidden" name="_lat" th:value="${station.lat}" />
-                    <input type="hidden" name="_lng" th:value="${station.lng}" />
+                    <input type="hidden" id="editLat" name="lat" class="edit-lat" />
+                    <input type="hidden" id="editLng" name="lng" class="edit-lng" />
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">Name</label>
@@ -66,18 +66,47 @@
                 </form>
 
                 <script th:inline="javascript">
-/*<![CDATA[*/
-document.addEventListener('DOMContentLoaded', function() {
-    var lat = 53.5511;
-    var lng = 9.9937;
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var lat = /*[[${station != null ? station.lat : 53.5511}]]*/ 53.5511;
+                        var lng = /*[[${station != null ? station.lng : 9.9937}]]*/ 9.9937;
 
-    var stationData = [[${station}]];
-    if (stationData && stationData.lat) {
-        lat = stationData.lat;
-        lng = stationData.lng;
-    }
-});
-/*]]>*/
+                        var map = L.map('position-map').setView([lat, lng], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19
+                        }).addTo(map);
+
+                        var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                        marker.on('dragend', function(e) {
+                            var pos = e.target.getLatLng();
+                            var el = document.getElementById(lat > 0 ? 'editLat' : 'createLat');
+                            var lngEl = document.getElementById(lat > 0 ? 'editLng' : 'createLng');
+                            if (el && el.name === 'lat') {
+                                el.value = pos.lat;
+                                lngEl.value = pos.lng;
+                            } else {
+                                el = document.getElementById('createLat');
+                                lngEl = document.getElementById('createLng');
+                                el.value = pos.lat;
+                                lngEl.value = pos.lng;
+                            }
+                        });
+
+                        map.on('click', function(e) {
+                            marker.setLatLng(e.latlng);
+                            var el = document.getElementById(lat > 0 ? 'editLat' : 'createLat');
+                            var lngEl = document.getElementById(lat > 0 ? 'editLng' : 'createLng');
+                            if (el && el.name === 'lat') {
+                                el.value = e.latlng.lat;
+                                lngEl.value = e.latlng.lng;
+                            } else {
+                                el = document.getElementById('createLat');
+                                lngEl = document.getElementById('createLng');
+                                el.value = e.latlng.lat;
+                                lngEl.value = e.latlng.lng;
+                            }
+                        });
+                    });
                 </script>
             </div>
         </main>

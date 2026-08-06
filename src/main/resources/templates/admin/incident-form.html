@@ -5,6 +5,7 @@
     <title th:text="${incident != null} ? 'Einsatzort bearbeiten' : 'Neuen Einsatzort anlegen'"></title>
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="admin-page">
@@ -42,8 +43,8 @@
                 </form>
 
                 <form th:if="${incident != null}" method="post" th:action="@{/admin/incidents/{id}(id=${incident.id})}">
-                    <input type="hidden" name="_lat" th:value="${incident.lat}" />
-                    <input type="hidden" name="_lng" th:value="${incident.lng}" />
+                    <input type="hidden" id="editLat" name="lat" class="edit-lat" />
+                    <input type="hidden" id="editLng" name="lng" class="edit-lng" />
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">Name</label>
@@ -72,18 +73,47 @@
                 </form>
 
                 <script th:inline="javascript">
-/*<![CDATA[*/
-document.addEventListener('DOMContentLoaded', function() {
-    var lat = 53.5511;
-    var lng = 9.9937;
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var lat = /*[[${incident != null ? incident.lat : 53.5511}]]*/ 53.5511;
+                        var lng = /*[[${incident != null ? incident.lng : 9.9937}]]*/ 9.9937;
 
-    var incidentData = [[${incident}]];
-    if (incidentData && incidentData.lat) {
-        lat = incidentData.lat;
-        lng = incidentData.lng;
-    }
-});
-/*]]>*/
+                        var map = L.map('position-map').setView([lat, lng], 13);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19
+                        }).addTo(map);
+
+                        var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                        marker.on('dragend', function(e) {
+                            var pos = e.target.getLatLng();
+                            var el = document.getElementById(lat > 0 ? 'editLat' : 'createLat');
+                            var lngEl = document.getElementById(lat > 0 ? 'editLng' : 'createLng');
+                            if (el && el.name === 'lat') {
+                                el.value = pos.lat;
+                                lngEl.value = pos.lng;
+                            } else {
+                                el = document.getElementById('createLat');
+                                lngEl = document.getElementById('createLng');
+                                el.value = pos.lat;
+                                lngEl.value = pos.lng;
+                            }
+                        });
+
+                        map.on('click', function(e) {
+                            marker.setLatLng(e.latlng);
+                            var el = document.getElementById(lat > 0 ? 'editLat' : 'createLat');
+                            var lngEl = document.getElementById(lat > 0 ? 'editLng' : 'createLng');
+                            if (el && el.name === 'lat') {
+                                el.value = e.latlng.lat;
+                                lngEl.value = e.latlng.lng;
+                            } else {
+                                el = document.getElementById('createLat');
+                                lngEl = document.getElementById('createLng');
+                                el.value = e.latlng.lat;
+                                lngEl.value = e.latlng.lng;
+                            }
+                        });
+                    });
                 </script>
             </div>
         </main>
