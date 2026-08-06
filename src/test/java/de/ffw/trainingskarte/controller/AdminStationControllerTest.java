@@ -48,6 +48,7 @@ class AdminStationControllerTest {
         testStation.setName("Feuerwache 1");
         testStation.setLat(53.55);
         testStation.setLng(9.99);
+        testStation.setDescription("Beschreibung 1");
     }
 
     @BeforeEach
@@ -74,6 +75,40 @@ class AdminStationControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    void newFormAsAdminReturnsOk() throws Exception {
+        mockMvc.perform(get("/admin/stations/new"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/station-form"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void editFormAsAdminReturnsOk() throws Exception {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+
+        mockMvc.perform(get("/admin/stations/1/edit"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/station-form"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void editFormNotFoundReturns404() throws Exception {
+        when(stationRepository.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/admin/stations/999/edit"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void editFormAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(get("/admin/stations/1/edit"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
     void createAsAdminReturnsRedirect() throws Exception {
         when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -86,6 +121,20 @@ class AdminStationControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    void createAsAdminWithDescriptionReturnsRedirect() throws Exception {
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/stations")
+                .with(csrf())
+                .param("name", "Feuerwache")
+                .param("lat", "53.5")
+                .param("lng", "9.9")
+                .param("description", "Beschreibung"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     @WithMockUser(roles = "VIEWER")
     void createAsViewerReturnsForbidden() throws Exception {
         mockMvc.perform(post("/admin/stations")
@@ -93,6 +142,59 @@ class AdminStationControllerTest {
                 .param("name", "Feuerwache")
                 .param("lat", "53.5")
                 .param("lng", "9.9"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateAsAdminReturnsRedirect() throws Exception {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/stations/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateAsAdminWithDescriptionReturnsRedirect() throws Exception {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/stations/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0")
+                .param("description", "Updated Beschreibung"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateNotFoundReturns404() throws Exception {
+        when(stationRepository.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/admin/stations/999")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(post("/admin/stations/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0"))
             .andExpect(status().isForbidden());
     }
 

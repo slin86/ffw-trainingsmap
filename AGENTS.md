@@ -147,12 +147,26 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] AdminIncidentControllerTest: GET (?all=true), POST (create), POST /{id}/toggle, POST /{id}/delete
 - [x] Alle 4 neue Tests gruen mit `./gradlew test`
 
+### M15: Description-Feld und Formular-Auslagerung (complete)
+
+- [x] Flyway Migration V5: nullable `description` TEXT-Spalte auf Tablle `location`
+- [x] Location.java: Feld `protected String description;` + Getter/Setter in Basisklasse
+- [x] LocationRequest DTO ergaenzt um description-Feld (optional/nullable)
+- [x] StationController: create() und PUT /{id} uebernehmen description
+- [x] IncidentController: create() und update() uebernehmen description
+- [x] admin/station-form.html: Template fuer Anlegen/Bearbeiten mit Name, Description, Leaflet-Karte
+- [x] admin/incident-form.html: analog inkl. Aktiv/Inaktiv Checkbox (nur Edit-Modus)
+- [x] AdminStationController erweitert um GET /new, GET /{id}/edit, POST create/update endpoints
+- [x] AdminIncidentController erweitert um GET /new, GET /{id}/edit, POST create/update endpoints
+- [x] admin/stations.html: inline Create-Formular entfernt, Button "Neue Feuerwache anlegen" -> /admin/stations/new
+- [x] admin/incidents.html: inline Create-Formular entfernt, Button "Neuen Einsatzort anlegen" -> /admin/incidents/new
+- [x] beide Listen zeigen nur Name/Koordinaten/Aktionen (keine description Spalte); Bearbeiten-Link pro Zeile
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
 - Station hat kein `active`-Flag, nur Incident.
-- **description-Feld:** Kommt spaeter als separate Session.
 
 ## Guardrails
 

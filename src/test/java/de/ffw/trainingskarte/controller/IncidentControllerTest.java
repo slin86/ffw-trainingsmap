@@ -46,6 +46,7 @@ class IncidentControllerTest {
         testIncident.setLat(53.55);
         testIncident.setLng(9.99);
         testIncident.setActive(true);
+        testIncident.setDescription("Beschreibung 1");
     }
 
     @BeforeEach
@@ -107,6 +108,18 @@ class IncidentControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    void createAsAdminWithDescriptionReturnsCreated() throws Exception {
+        when(incidentRepository.save(any(Incident.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/api/incidents")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Einsatzort\",\"lat\":53.5,\"lng\":9.9,\"description\":\"Beschreibung\"}"))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
     void updateAsAdminReturnsOk() throws Exception {
         when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
         when(incidentRepository.save(any(Incident.class))).thenAnswer(i -> i.getArgument(0));
@@ -115,6 +128,20 @@ class IncidentControllerTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("Neuer Name"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateAsAdminWithDescriptionReturnsOk() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+        when(incidentRepository.save(any(Incident.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(put("/api/incidents/1")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0,\"description\":\"Updated Beschreibung\"}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("Neuer Name"));
     }

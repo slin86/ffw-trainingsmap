@@ -49,6 +49,7 @@ class StationControllerTest {
         testStation.setName("Feuerwache 1");
         testStation.setLat(53.55);
         testStation.setLng(9.99);
+        testStation.setDescription("Beschreibung 1");
     }
 
     @BeforeEach
@@ -109,6 +110,18 @@ class StationControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    void createAsAdminWithDescriptionReturnsCreated() throws Exception {
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/api/stations")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Feuerwache\",\"lat\":53.5,\"lng\":9.9,\"description\":\"Beschreibung\"}"))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
     void updateAsAdminReturnsOk() throws Exception {
         when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
         when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
@@ -117,6 +130,20 @@ class StationControllerTest {
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.name").value("Neuer Name"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateAsAdminWithDescriptionReturnsOk() throws Exception {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(put("/api/stations/1")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0,\"description\":\"Updated Beschreibung\"}"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("Neuer Name"));
     }

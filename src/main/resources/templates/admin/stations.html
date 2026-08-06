@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>Feuerwachen - Verwaltung</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <div class="admin-page">
@@ -19,25 +17,7 @@
                 <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
-                <div>
-                    <h2>Neue Feuerwache anlegen</h2>
-                    <form method="post" th:action="@{/admin/stations}">
-                        <input type="hidden" id="createLat" name="lat" />
-                        <input type="hidden" id="createLng" name="lng" />
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" name="name" required placeholder="z.B. Feuerwache 1" />
-                            </div>
-                        </div>
-                        <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
-                        <div class="form-section">
-                            <h2>Position (auf der Karte klicken)</h2>
-                            <div id="position-map"></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Anlegen</button>
-                    </form>
-                </div>
+                <p><a th:href="@{/admin/stations/new}" class="btn btn-primary">Neue Feuerwache anlegen</a></p>
 
                 <h2>Feuerwachen (Stationen)</h2>
                 <table th:if="${stations != null and !stations.empty}">
@@ -53,6 +33,7 @@
                             <td><strong th:text="${s.name}"></strong></td>
                             <td><span th:text="${#numbers.formatDecimal(s.lat, 4, 2)} + ', ' + ${#numbers.formatDecimal(s.lng, 4, 2)}"></span></td>
                             <td class="actions">
+                                <a th:href="@{/admin/stations/{id}/edit(id=${s.id})}" class="btn btn-secondary">Bearbeiten</a>
                                 <form method="post" th:action="@{/admin/stations/{id}/delete(id=${s.id})}" style="display:inline;" class="confirm-form" onsubmit="return confirm('Feuerwache wirklich löschen?')">
                                     <button type="submit">Löschen</button>
                                 </form>
@@ -63,32 +44,6 @@
 
                 <p th:if="${stations == null or stations.empty}" style="color:#666;">Keine Feuerwachen gefunden.</p>
             </div>
-
-            <script th:inline="javascript">
-                document.addEventListener('DOMContentLoaded', function() {
-                    var lat = 53.5511;
-                    var lng = 9.9937;
-
-                    var map = L.map('position-map').setView([lat, lng], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19
-                    }).addTo(map);
-
-                    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
-
-                    marker.on('dragend', function(e) {
-                        var pos = e.target.getLatLng();
-                        document.getElementById('createLat').value = pos.lat;
-                        document.getElementById('createLng').value = pos.lng;
-                    });
-
-                    map.on('click', function(e) {
-                        marker.setLatLng(e.latlng);
-                        document.getElementById('createLat').value = e.latlng.lat;
-                        document.getElementById('createLng').value = e.latlng.lng;
-                    });
-                });
-            </script>
         </main>
     </div>
 </body>
