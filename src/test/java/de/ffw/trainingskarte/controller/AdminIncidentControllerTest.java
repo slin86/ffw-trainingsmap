@@ -93,6 +93,20 @@ class AdminIncidentControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    void createAsAdminWithDescriptionReturnsRedirect() throws Exception {
+        when(incidentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/incidents")
+                .with(csrf())
+                .param("name", "Einsatzort")
+                .param("lat", "53.5")
+                .param("lng", "9.9")
+                .param("description", "Beschreibungstext"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     @WithMockUser(roles = "VIEWER")
     void createAsViewerReturnsForbidden() throws Exception {
         mockMvc.perform(post("/admin/incidents")
@@ -203,6 +217,21 @@ class AdminIncidentControllerTest {
                 .param("name", "Neuer Name")
                 .param("lat", "53.6")
                 .param("lng", "10.0"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateIncidentWithDescriptionReturnsRedirect() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+        when(incidentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/incidents/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0")
+                .param("description", "Beschreibungstext"))
             .andExpect(status().is3xxRedirection());
     }
 

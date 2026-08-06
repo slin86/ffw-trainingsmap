@@ -29,6 +29,11 @@
                                    th:value="${incident != null ? incident.name : ''}"
                                    placeholder="z.B. Brand in Hafen City" />
                         </div>
+                        <div class="form-group">
+                            <label for="description">Beschreibung</label>
+                            <textarea id="description" name="description"
+                                      th:text="${incident != null ? incident.description : ''}"></textarea>
+                        </div>
                         <div class="form-group" th:if="${incident != null}">
                             <label for="active">Aktiv</label>
                             <input type="checkbox" id="active" name="active" 

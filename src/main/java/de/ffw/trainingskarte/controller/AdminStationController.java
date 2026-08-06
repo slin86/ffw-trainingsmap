@@ -66,11 +66,15 @@ public class AdminStationController {
     public String create(@RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
         Station station = new Station();
         station.setName(name);
         station.setLat(lat);
         station.setLng(lng);
+        if (description != null) {
+            station.setDescription(description);
+        }
         stationRepository.save(station);
 
         session.setAttribute("flashMessage", "Feuerwache '" + name + "' angelegt");
@@ -82,6 +86,7 @@ public class AdminStationController {
                          @RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
         Station station = stationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ort nicht gefunden: " + id));
@@ -89,6 +94,9 @@ public class AdminStationController {
         station.setName(name);
         station.setLat(lat);
         station.setLng(lng);
+        if (description != null) {
+            station.setDescription(description);
+        }
         stationRepository.save(station);
 
         session.setAttribute("flashMessage", "Feuerwache '" + name + "' aktualisiert");

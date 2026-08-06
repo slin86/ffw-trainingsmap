@@ -86,6 +86,20 @@ class AdminStationControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    void createAsAdminWithDescriptionReturnsRedirect() throws Exception {
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/stations")
+                .with(csrf())
+                .param("name", "Feuerwache")
+                .param("lat", "53.5")
+                .param("lng", "9.9")
+                .param("description", "Beschreibungstext"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     @WithMockUser(roles = "VIEWER")
     void createAsViewerReturnsForbidden() throws Exception {
         mockMvc.perform(post("/admin/stations")
@@ -177,6 +191,21 @@ class AdminStationControllerTest {
                 .param("name", "Neuer Name")
                 .param("lat", "53.6")
                 .param("lng", "10.0"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateStationWithDescriptionReturnsRedirect() throws Exception {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
+        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/stations/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0")
+                .param("description", "Beschreibungstext"))
             .andExpect(status().is3xxRedirection());
     }
 

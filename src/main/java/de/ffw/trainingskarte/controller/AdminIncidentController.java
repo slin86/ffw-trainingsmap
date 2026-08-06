@@ -69,11 +69,15 @@ public class AdminIncidentController {
     public String create(@RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
         Incident incident = new Incident();
         incident.setName(name);
         incident.setLat(lat);
         incident.setLng(lng);
+        if (description != null) {
+            incident.setDescription(description);
+        }
         incident.setActive(true);
         incidentRepository.save(incident);
 
@@ -87,6 +91,7 @@ public class AdminIncidentController {
                          @RequestParam double lat,
                          @RequestParam double lng,
                          @RequestParam(required = false) Boolean active,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
         Incident incident = incidentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Einsatzort nicht gefunden: " + id));
@@ -94,6 +99,9 @@ public class AdminIncidentController {
         incident.setName(name);
         incident.setLat(lat);
         incident.setLng(lng);
+        if (description != null) {
+            incident.setDescription(description);
+        }
         if (active != null) {
             incident.setActive(active);
         }

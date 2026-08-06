@@ -29,6 +29,11 @@
                                    th:value="${station != null ? station.name : ''}"
                                    placeholder="z.B. Feuerwache 1" />
                         </div>
+                        <div class="form-group">
+                            <label for="description">Beschreibung</label>
+                            <textarea id="description" name="description"
+                                      th:text="${station != null ? station.description : ''}"></textarea>
+                        </div>
                     </div>
                     <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
                     <div class="form-section">
