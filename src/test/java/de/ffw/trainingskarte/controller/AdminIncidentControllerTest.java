@@ -149,4 +149,99 @@ class AdminIncidentControllerTest {
                 .with(csrf()))
             .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void newFormReturnsOk() throws Exception {
+        mockMvc.perform(get("/admin/incidents/new"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/incident-form"));
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void newFormAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(get("/admin/incidents/new"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void editFormReturnsOkForExistingIncident() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+
+        mockMvc.perform(get("/admin/incidents/1/edit"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/incident-form"))
+            .andExpect(model().attribute("incident", testIncident));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void editFormReturns404ForUnknownId() throws Exception {
+        when(incidentRepository.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/admin/incidents/999/edit"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void editFormAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(get("/admin/incidents/1/edit"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateIncidentReturnsRedirect() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+        when(incidentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/incidents/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateIncidentWithActiveFlagReturnsRedirect() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+        when(incidentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/incidents/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0")
+                .param("active", "false"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateNotFoundReturns404() throws Exception {
+        when(incidentRepository.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(post("/admin/incidents/999")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(post("/admin/incidents/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0"))
+            .andExpect(status().isForbidden());
+    }
 }

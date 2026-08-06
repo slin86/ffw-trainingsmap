@@ -51,6 +51,20 @@ public class AdminIncidentController {
         return "admin/incidents";
     }
 
+    @GetMapping("/new")
+    public String newForm(Model model) {
+        model.addAttribute("incident", null);
+        return "admin/incident-form";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Einsatzort nicht gefunden: " + id));
+        model.addAttribute("incident", incident);
+        return "admin/incident-form";
+    }
+
     @PostMapping
     public String create(@RequestParam String name,
                          @RequestParam double lat,
@@ -64,6 +78,28 @@ public class AdminIncidentController {
         incidentRepository.save(incident);
 
         session.setAttribute("flashMessage", "Einsatzort '" + name + "' angelegt");
+        return "redirect:/admin/incidents";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable Long id,
+                         @RequestParam String name,
+                         @RequestParam double lat,
+                         @RequestParam double lng,
+                         @RequestParam(required = false) Boolean active,
+                         HttpSession session) {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Einsatzort nicht gefunden: " + id));
+
+        incident.setName(name);
+        incident.setLat(lat);
+        incident.setLng(lng);
+        if (active != null) {
+            incident.setActive(active);
+        }
+        incidentRepository.save(incident);
+
+        session.setAttribute("flashMessage", "Einsatzort '" + name + "' aktualisiert");
         return "redirect:/admin/incidents";
     }
 
