@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${incident != null} ? 'Einsatzort bearbeiten' : 'Neuen Einsatzort anlegen'"></title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="admin-page">
+        <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
+        <main class="admin-content">
+            <div class="page-header">
+                <h1 th:text="${incident != null} ? 'Einsatzort bearbeiten' : 'Neuen Einsatzort anlegen'"></h1>
+                <a th:href="@{/admin/incidents}">&larr; Zurück zur Übersicht</a>
+            </div>
+            <div class="container">
+                <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
+                <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
+
+                <form th:if="${incident == null}" method="post" th:action="@{/admin/incidents}">
+                    <input type="hidden" id="createLat" name="lat" />
+                    <input type="hidden" id="createLng" name="lng" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required placeholder="z.B. Brand in Hafen City" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="description">Beschreibung</label>
+                            <textarea id="description" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
+                    <div class="form-section">
+                        <h2>Position (auf der Karte klicken)</h2>
+                        <div id="position-map"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Anlegen</button>
+                </form>
+
+                <form th:if="${incident != null}" method="post" th:action="@{/admin/incidents/{id}(id=${incident.id})}">
+                    <input type="hidden" name="_lat" th:value="${incident.lat}" />
+                    <input type="hidden" name="_lng" th:value="${incident.lng}" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required th:value="${incident.name}" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="description">Beschreibung</label>
+                            <textarea id="description" name="description" rows="3" th:text="${incident.description}"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group checkbox">
+                            <label>
+                                <input type="checkbox" name="active" th:checked="${incident.active}" /> Aktiv
+                            </label>
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
+                    <div class="form-section">
+                        <h2>Position (auf der Karte klicken)</h2>
+                        <div id="position-map"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </form>
+
+                <script th:inline="javascript">
+/*<![CDATA[*/
+document.addEventListener('DOMContentLoaded', function() {
+    var lat = 53.5511;
+    var lng = 9.9937;
+
+    var incidentData = [[${incident}]];
+    if (incidentData && incidentData.lat) {
+        lat = incidentData.lat;
+        lng = incidentData.lng;
+    }
+});
+/*]]>*/
+                </script>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
