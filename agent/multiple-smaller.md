@@ -1,0 +1,209 @@
++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-
+------------------  1. ------------------
++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-
+Lies AGENTS.md. Deliverable dieser Session: Bugfixes an StationController/
+IncidentController/AdminStationController/AdminIncidentController + Tests
+fuer alle vier. KEIN description-Feld - das ist eine separate, spaetere
+Session.
+
+Bugfixes:
+1. StationController: fehlenden Update-Endpoint ergaenzen -
+   PUT /api/stations/{id}, analog zu IncidentController.update()
+   (Name/lat/lng aktualisieren, @PreAuthorize ADMIN-only, 404 bei
+   unbekannter ID).
+2. StationController.findAllWithVehicles(): Methode macht aktuell nur
+   ein einfaches findAll() ohne Fetch-Join, obwohl der Name etwas anderes
+   suggeriert. Entweder die Methode in StationRepository um einen
+   echten Fetch-Join fuer `vehicles` ergaenzen (JOIN FETCH s.vehicles in
+   einer @Query) und den Controller entsprechend nutzen, ODER falls kein
+   Fetch-Join aktuell gebraucht wird: Methode zu `findAll()` umbenennen
+   und den irrefuehrenden Namen entfernen. Waehle die einfachere Variante
+   (Umbenennen), es sei denn Vehicles werden aktuell schon irgendwo aus
+   der Station-Response gelesen - das vorher pruefen.
+3. Unbenutzte Imports (Incident, Location) aus StationController.java
+   entfernen - IntelliJ "Optimize Imports" (Ctrl+Alt+O) verwenden statt
+   manuell, um Fehlerrisiko zu vermeiden.
+4. Fehlermeldungen vereinheitlichen: IncidentController.update() wirft
+   "incident not found" (klein), StationController "Station not found"
+   (gross) - auf einheitliche Konvention bringen (Grossschreibung wie in
+   StationController).
+
+Tests (4 neue @WebMvcTest-Klassen, orientiere dich an bestehendem Muster,
+z.B. VehicleControllerTest.java, fuer Mocking/Security-Context ADMIN vs.
+VIEWER):
+5. StationControllerTest: GET (Liste), GET /{id} (inkl. 404), POST
+   (ADMIN-only, 403 fuer VIEWER), PUT /{id} (der neue Endpoint aus
+   Punkt 1, inkl. 404 und 403-Fall), DELETE (ADMIN-only).
+6. IncidentControllerTest: GET (Liste, inkl. ?all=true-Unterscheidung
+   aktive/alle), GET /{id}, POST, PUT /{id}, PATCH /{id}/active (inkl.
+   Fehlerfall fehlendes "active"-Feld im Body), DELETE. Alle
+   Schreibzugriffe ADMIN-only pruefen.
+7. AdminStationControllerTest: GET /admin/stations (Liste + Flash-
+   Message-Handling), POST /admin/stations (create + Redirect), POST
+   /admin/stations/{id}/delete (inkl. 404-Fall bei unbekannter ID).
+8. AdminIncidentControllerTest: GET /admin/incidents (inkl. ?all=true),
+   POST /admin/incidents (create), POST /admin/incidents/{id}/toggle
+   (aktiv <-> inaktiv), POST /admin/incidents/{id}/delete.
+
+Nicht-Ziele: kein description-Feld, keine Template-Aenderungen, kein
+Edit-Formular (kommt in spaeterer Session), keine Aenderung an
+bestehenden Tests ausserhalb der vier neuen Klassen.
+
+Abnahme:
+- `./gradlew test` gruen.
+- `git diff --stat` zeigt vier neue/geaenderte Test-Dateien.
+- curl PUT http://localhost:8080/api/stations/{id} funktioniert (Punkt 1
+  manuell verifizieren, nicht nur ueber Test).
+- `grep -rn "Incident\|Location" src/main/java/.../StationController.java`
+  zeigt keine unbenutzten Imports mehr.
+
+Danach: git status pruefen, commit, AGENTS.md aktualisieren (offene
+Punkte: description-Feld steht noch aus als naechster Schritt, danach
+Template-Aufteilung).
+
+
+
++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-
+------------------  2. ------------------
++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-
+Lies AGENTS.md. Deliverable dieser Session: Create-Formulare fuer Station
+und Incident auf eigene Seiten auslagern, Editierbarkeit fuer beide
+ergaenzen, inkl. Tests. Nutzt den bestehenden REST-Endpoint
+PUT /api/stations/{id} nicht direkt - die Admin-UI bekommt eigene
+POST-Update-Routen (server-rendert, kein AJAX/REST-Aufruf noetig, analog
+zum bestehenden Admin-Create-Flow).
+
+1. Neues Template admin/station-form.html: Felder Name, Leaflet-
+   Positionskarte (Klick + Drag wie im bisherigen Formular). Schaltet per
+   Model-Attribut zwischen Anlegen- und Bearbeiten-Modus um (Attribut
+   `station` null vs. befuellt, `formAction` je nach Modus - bei Anlegen
+   POST /admin/stations, bei Bearbeiten POST /admin/stations/{id}).
+
+2. Neues Template admin/incident-form.html: analog, zusaetzlich ein
+   Aktiv/Inaktiv-Checkbox-Feld (nur im Edit-Modus relevant - bei Neu-
+   Anlage immer aktiv, kein Feld noetig).
+
+3. AdminStationController erweitern:
+    - GET /admin/stations/new -> station-form.html im Anlegen-Modus.
+    - GET /admin/stations/{id}/edit -> station-form.html im Edit-Modus,
+      Positions-Marker startet an vorhandenen Koordinaten, 404/Fehlerseite
+      bei unbekannter ID.
+    - POST /admin/stations/{id} -> aktualisiert name, lat, lng, Redirect
+      zu /admin/stations mit Flash-Message.
+
+4. AdminIncidentController erweitern:
+    - GET /admin/incidents/new -> incident-form.html im Anlegen-Modus.
+    - GET /admin/incidents/{id}/edit -> incident-form.html im Edit-Modus,
+      inkl. aktuellem active-Status, 404 bei unbekannter ID.
+    - POST /admin/incidents/{id} -> aktualisiert name, lat, lng, active,
+      Redirect zu /admin/incidents mit Flash-Message.
+
+5. admin/stations.html: das inline Create-Formular oben auf der Seite
+   entfernen, stattdessen Button "Neue Feuerwache anlegen" ->
+   /admin/stations/new. Pro Tabellenzeile einen "Bearbeiten"-Link ->
+   /admin/stations/{id}/edit ergaenzen (neben dem bestehenden Loeschen-
+   Button).
+
+6. admin/incidents.html: analog - Create-Formular raus, Button "Neuen
+   Einsatzort anlegen" -> /admin/incidents/new, "Bearbeiten"-Link pro
+   Zeile neben Toggle- und Loeschen-Button.
+
+Tests (AdminStationControllerTest und AdminIncidentControllerTest um
+folgende Faelle erweitern, gleiches Muster wie bestehende Tests dort):
+7. GET .../new -> Status 200, korrektes View-Model (leeres Formular).
+8. GET .../{id}/edit -> Status 200 mit befuelltem Formular fuer
+   existierende ID; 404/Fehlerfall fuer unbekannte ID.
+9. POST .../{id} (Update) -> Redirect nach erfolgreichem Update, DB-
+   Werte danach pruefen (Mock-Repository-Interaktion verifizieren);
+   Validierungsfehler-Fall (z.B. Koordinaten ausserhalb Hamburg-Bounds)
+   -> kein Redirect / Fehler-Flash.
+10. Alle neuen Routen: 403 bzw. Redirect-to-Login fuer nicht-ADMIN-
+    Zugriff pruefen (Security-Test wie bei den bestehenden Admin-Tests).
+
+Nicht-Ziele: kein description-Feld (separate Session), kein Typwechsel
+Station<->Incident, keine Aenderung an den REST-Endpoints /api/stations
+und /api/incidents.
+
+Abnahme:
+- `./gradlew test` gruen.
+- `git diff --stat` zeigt Aenderungen in beiden Test-Klassen (nicht nur
+  in den Controllern/Templates).
+- Browser: /admin/stations zeigt nur noch Liste + "Neue Feuerwache
+  anlegen"-Button, kein inline-Formular mehr. Anlegen funktioniert unter
+  /admin/stations/new wie vorher (Kartenklick setzt Koordinaten).
+- Browser: Station bearbeiten (Name/Koordinaten aendern, speichern,
+  Reload zeigt neue Werte).
+- Browser: dasselbe fuer /admin/incidents inkl. aktiv/inaktiv-Aenderung
+  im Edit-Formular.
+
+Danach: git status pruefen, commit, AGENTS.md aktualisieren (Feature aus
+"Noch offen" raus, offen bleibt: description-Feld als naechster Schritt).
+
+
++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-
+------------------  3. ------------------
++-+-+-+-+-+-+-+-+-+-++-+-+-+-+-+-+-+-+-+-
+Lies AGENTS.md. Deliverable dieser Session: description-Feld fuer
+Station und Incident durchgaengig - Datenschicht, beide REST-Controller,
+beide Admin-Controller (create + update), beide Formular-Templates, plus
+Tests in allen vier bestehenden Testklassen erweitert (nicht neu
+anlegen).
+
+1. Flyway-Migration Vx: nullable Spalte `description` (TEXT) auf
+   Tabelle `location`. Gilt fuer beide Subtypen (Single-Table-
+   Inheritance).
+
+2. Location.java: Feld `protected String description;` + Getter/Setter
+   in der Basisklasse (nicht in Station/Incident einzeln).
+
+3. LocationRequest-DTO: description-Feld ergaenzen (optional/nullable).
+
+4. StationController: description in create() und PUT /{id} (aus der
+   letzten Session) uebernehmen.
+
+5. IncidentController: description in create() und update()
+   uebernehmen.
+
+6. AdminStationController: POST /admin/stations (create) und
+   POST /admin/stations/{id} (update, aus der letzten Session) um
+   @RequestParam(required = false) String description erweitern und auf
+   der Station setzen.
+
+7. AdminIncidentController: analog fuer POST /admin/incidents und
+   POST /admin/incidents/{id}.
+
+8. admin/station-form.html und admin/incident-form.html: jeweils ein
+   <textarea name="description"> ergaenzen, im Edit-Modus mit
+   vorhandenem Wert vorbefuellt.
+
+9. admin/stations.html und admin/incidents.html (Listen-Tabellen):
+   description NICHT als eigene Spalte anzeigen (macht die Tabelle zu
+   breit) - bleibt nur im Formular sichtbar/aenderbar.
+
+Tests (bestehende Klassen erweitern, keine neuen Testklassen):
+10. StationControllerTest: POST und PUT jeweils um einen Fall mit
+    description im Request-Body erweitern, Response/DB-Wert pruefen.
+11. IncidentControllerTest: analog fuer create() und update().
+12. AdminStationControllerTest: POST /admin/stations und
+    POST /admin/stations/{id} um description-Parameter erweitern.
+13. AdminIncidentControllerTest: analog.
+
+Nicht-Ziele: description nicht in den Listen-Tabellen anzeigen, kein
+Pflichtfeld (bleibt optional/nullable), keine Laengenbegrenzung/
+Validierung fuer description in dieser Session.
+
+Abnahme:
+- `./gradlew test` gruen.
+- `git diff --stat` zeigt Aenderungen in allen vier bestehenden
+  Testklassen (StationControllerTest, IncidentControllerTest,
+  AdminStationControllerTest, AdminIncidentControllerTest) - falls eine
+  davon nicht angefasst wurde, ist die Session nicht abgeschlossen.
+- curl POST/PUT auf /api/stations und /api/incidents mit description im
+  Body -> Response enthaelt das Feld.
+- Browser: Station und Incident jeweils ueber /admin/stations/new bzw.
+  /admin/incidents/new mit description anlegen, danach ueber .../edit
+  bearbeiten - description ist vorbefuellt und aenderbar.
+
+Danach: git status pruefen, commit, AGENTS.md aktualisieren (Feature aus
+"Noch offen" raus - damit ist der urspruengliche Vier-Punkte-Plan
+komplett).
