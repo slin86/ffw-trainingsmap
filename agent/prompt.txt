@@ -1,0 +1,59 @@
+Lies AGENTS.md. Deliverable dieser Session: Bugfixes an StationController/
+IncidentController/AdminStationController/AdminIncidentController + Tests
+fuer alle vier. KEIN description-Feld - das ist eine separate, spaetere
+Session.
+
+Bugfixes:
+1. StationController: fehlenden Update-Endpoint ergaenzen -
+   PUT /api/stations/{id}, analog zu IncidentController.update()
+   (Name/lat/lng aktualisieren, @PreAuthorize ADMIN-only, 404 bei
+   unbekannter ID).
+2. StationController.findAllWithVehicles(): Methode macht aktuell nur
+   ein einfaches findAll() ohne Fetch-Join, obwohl der Name etwas anderes
+   suggeriert. Entweder die Methode in StationRepository um einen
+   echten Fetch-Join fuer `vehicles` ergaenzen (JOIN FETCH s.vehicles in
+   einer @Query) und den Controller entsprechend nutzen, ODER falls kein
+   Fetch-Join aktuell gebraucht wird: Methode zu `findAll()` umbenennen
+   und den irrefuehrenden Namen entfernen. Waehle die einfachere Variante
+   (Umbenennen), es sei denn Vehicles werden aktuell schon irgendwo aus
+   der Station-Response gelesen - das vorher pruefen.
+3. Unbenutzte Imports (Incident, Location) aus StationController.java
+   entfernen - IntelliJ "Optimize Imports" (Ctrl+Alt+O) verwenden statt
+   manuell, um Fehlerrisiko zu vermeiden.
+4. Fehlermeldungen vereinheitlichen: IncidentController.update() wirft
+   "incident not found" (klein), StationController "Station not found"
+   (gross) - auf einheitliche Konvention bringen (Grossschreibung wie in
+   StationController).
+
+Tests (4 neue @WebMvcTest-Klassen, orientiere dich an bestehendem Muster,
+z.B. VehicleControllerTest.java, fuer Mocking/Security-Context ADMIN vs.
+VIEWER):
+5. StationControllerTest: GET (Liste), GET /{id} (inkl. 404), POST
+   (ADMIN-only, 403 fuer VIEWER), PUT /{id} (der neue Endpoint aus
+   Punkt 1, inkl. 404 und 403-Fall), DELETE (ADMIN-only).
+6. IncidentControllerTest: GET (Liste, inkl. ?all=true-Unterscheidung
+   aktive/alle), GET /{id}, POST, PUT /{id}, PATCH /{id}/active (inkl.
+   Fehlerfall fehlendes "active"-Feld im Body), DELETE. Alle
+   Schreibzugriffe ADMIN-only pruefen.
+7. AdminStationControllerTest: GET /admin/stations (Liste + Flash-
+   Message-Handling), POST /admin/stations (create + Redirect), POST
+   /admin/stations/{id}/delete (inkl. 404-Fall bei unbekannter ID).
+8. AdminIncidentControllerTest: GET /admin/incidents (inkl. ?all=true),
+   POST /admin/incidents (create), POST /admin/incidents/{id}/toggle
+   (aktiv <-> inaktiv), POST /admin/incidents/{id}/delete.
+
+Nicht-Ziele: kein description-Feld, keine Template-Aenderungen, kein
+Edit-Formular (kommt in spaeterer Session), keine Aenderung an
+bestehenden Tests ausserhalb der vier neuen Klassen.
+
+Abnahme:
+- `./gradlew test` gruen.
+- `git diff --stat` zeigt vier neue/geaenderte Test-Dateien.
+- curl PUT http://localhost:8080/api/stations/{id} funktioniert (Punkt 1
+  manuell verifizieren, nicht nur ueber Test).
+- `grep -rn "Incident\|Location" src/main/java/.../StationController.java`
+  zeigt keine unbenutzten Imports mehr.
+
+Danach: git status pruefen, commit, AGENTS.md aktualisieren (offene
+Punkte: description-Feld steht noch aus als naechster Schritt, danach
+Template-Aufteilung).

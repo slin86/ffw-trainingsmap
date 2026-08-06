@@ -4,6 +4,7 @@ import de.ffw.trainingskarte.entity.Incident;
 import de.ffw.trainingskarte.repository.IncidentRepository;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/admin/incidents")
@@ -68,7 +70,7 @@ public class AdminIncidentController {
     @PostMapping("/{id}/toggle")
     public String toggle(@PathVariable Long id, HttpSession session) {
         Incident incident = incidentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Einsatzort nicht gefunden: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Einsatzort nicht gefunden: " + id));
 
         incident.setActive(!incident.isActive());
         incidentRepository.save(incident);
@@ -81,7 +83,7 @@ public class AdminIncidentController {
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, HttpSession session) {
         Incident incident = incidentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Einsatzort nicht gefunden: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Einsatzort nicht gefunden: " + id));
 
         String name = incident.getName();
         incidentRepository.deleteById(id);

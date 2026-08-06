@@ -2,12 +2,12 @@ package de.ffw.trainingskarte.controller;
 
 import de.ffw.trainingskarte.controller.dto.LocationRequest;
 import de.ffw.trainingskarte.entity.Incident;
-import de.ffw.trainingskarte.entity.Location;
 import de.ffw.trainingskarte.repository.IncidentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -33,13 +33,13 @@ public class IncidentController {
     @GetMapping("/{id}")
     public Incident getById(@PathVariable Long id) {
         return incidentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Incident not found: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found: " + id));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Location> create(@RequestBody LocationRequest request) {
+    public ResponseEntity<Incident> create(@RequestBody LocationRequest request) {
         Incident incident = new Incident();
         incident.setName(request.name());
         incident.setLat(request.lat());
@@ -53,7 +53,7 @@ public class IncidentController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody LocationRequest request) {
         Incident incident = incidentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("incident not found: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found: " + id));
 
         incident.setName(request.name());
         incident.setLat(request.lat());
@@ -79,7 +79,7 @@ public class IncidentController {
     public ResponseEntity<Map<String, Object>> setActive(@PathVariable Long id, @RequestBody Map<String, Boolean> payload) {
 
         Incident incident = incidentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("incident not found: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found: " + id));
 
         if (!payload.containsKey("active")) {
             return ResponseEntity.badRequest()

@@ -20,7 +20,6 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
   Dienst
 - Status-Farben: gruen (1, 2), rot (3, 4), grau (6)
 - Positions-Validierung: lat 53.3-53.8, lng 9.6-10.4 (Hamburg-Gebiet)
-- Method Security: `@PreAuthorize` verwenden (nicht `@Secured` - ist ohne `securedEnabled` wirkungslos)
 - Location Subtypen: `Station` hat kein `active`-Flag (immer aktiv), nur `Incident` hat Flag
 
 ## Current State
@@ -43,7 +42,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Positions-Endpoint mit Hamburg-Validierung, Fehler als JSON Problem Detail
 - [x] Unit- und `@WebMvcTest`-Abdeckung inkl. Rollen-Regeln
 
-### M3: Kartenansicht (complete)
+### M3: Karteansicht (complete)
 
 - [x] `MapController` served Karte auf `/`
 - [x] `map.html`: Vollbild-Leaflet, Header mit Nutzername, Logout, Verwaltungs-Link (ADMIN)
@@ -96,24 +95,24 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 ### M8: Karte mit Location-Markern (complete)
 
 - [x] GET /api/locations beim Laden der Karte fuer Stationen + aktive Incidents
-- [x] Location Marker (blau f&uuml;r Station, gelb f&uuml;r active Incident)
+- [x] Location Marker (blau fuer Station, gelb fuer active Incident)
 - [x] Fahrzeuge mit location_id: Marker an Location-Koordinaten
 - [x] Fahrzeuge ohne location_id ("unterwegs"): Marker an eigener lat/lng
 - [x] Popup pro Location zeigt Name + Typ + Listen der zugewiesenen Fahrzeuge
 
 ### M9: Admin UI Sidebar (complete)
 
-- [x] Gemeinsame Sidebar f&uuml;r Admin-Bereich mit Nav (Fahrzeuge, Nutzer, Orte)
+- [x] Gemeinsame Sidebar fuer Admin-Bereich mit Nav (Fahrzeuge, Nutzer, Orte)
 - [x] Aktueller Bereich optisch markiert
-- [x] AdminLocationController: CRUD f&uuml;r Stations + Incidents
-- [x] Toggle active Status nur f&uuml;r Incidents
+- [x] AdminLocationController: CRUD fuer Stations + Incidents
+- [x] Toggle active Status nur fuer Incidents
 
 ### M10: Drag-and-Drop Positionierung (complete)
 
 - [x] PATCH /api/vehicles/{id}/position (ADMIN-only, Bounds validieren)
 - [x] Fahrzeug-Marker draggable nur als ADMIN
 - [x] dragend: PATCH -> neue Position speichern
-- [x] Fehler fallen Marker auf alte Position zur&uuml;ck
+- [x] Fehler fallen Marker auf alte Position zurueck
 
 ### M11: Location Vehicle Zuweisung (complete)
 
@@ -136,11 +135,24 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Templates: stations.html, incidents.html with sidebar navigation
 - [x] Fix type casting issue for LocationRepository.findById()
 
+### M14: Station/Incident Controller Bugfixes und Tests (complete)
+
+- [x] StationController: PUT /api/stations/{id} hinzugefuegt (ADMIN-only, 404 bei unbekannter ID)
+- [x] StationController.findAll() umbenannt (keine Fetch-Joins benoetigt)
+- [x] IncidentController/StationController: einheitliche Fehlermeldungen mit `ResponseStatusException`
+- [x] AdminStationController/AdminIncidentController: 404 bei unknown IDs statt IllegalArgumentException
+- [x] StationControllerTest: GET, POST (ADMIN-only), PUT (ADMIN-only), DELETE (ADMIN-only) + 404-Faelle
+- [x] IncidentControllerTest: GET (?all=true/false), POST/PUT/DELETE (ADMIN-only), PATCH /active (ADMIN-only)
+- [x] AdminStationControllerTest: GET, POST (create+redirect), POST /{id}/delete (inkl. 404-Fall)
+- [x] AdminIncidentControllerTest: GET (?all=true), POST (create), POST /{id}/toggle, POST /{id}/delete
+- [x] Alle 4 neue Tests gruen mit `./gradlew test`
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
 - Station hat kein `active`-Flag, nur Incident.
+- **description-Feld:** Kommt spaeter als separate Session.
 
 ## Guardrails
 

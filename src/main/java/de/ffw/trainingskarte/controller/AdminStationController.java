@@ -1,11 +1,10 @@
 package de.ffw.trainingskarte.controller;
 
-import de.ffw.trainingskarte.entity.Location;
 import de.ffw.trainingskarte.entity.Station;
 import de.ffw.trainingskarte.repository.StationRepository;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import java.util.Optional;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 @Controller
 @RequestMapping("/admin/stations")
@@ -65,9 +65,8 @@ public class AdminStationController {
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, HttpSession session) {
-        Optional<Station> locationOpt = stationRepository.findById(id);
-        Location station = locationOpt.orElseThrow(() -> new IllegalArgumentException("Ort nicht gefunden: " + id));
-
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ort nicht gefunden: " + id));
 
         String name = station.getName();
         stationRepository.deleteById(id);
