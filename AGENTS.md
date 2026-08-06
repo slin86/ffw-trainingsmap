@@ -150,7 +150,6 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
 - Station hat kein `active`-Flag, nur Incident.
-- **description-Feld:** Kommt spaeter als separate Session.
 
 ## Guardrails
 
