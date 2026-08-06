@@ -20,8 +20,8 @@
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
                 <form method="post" th:action="${station != null} ? @{/admin/stations/{id}(id=${station.id})} : @{/admin/stations}">
-                    <input type="hidden" id="lat" name="lat" th:value="${station != null ? station.lat : ''}" />
-                    <input type="hidden" id="lng" name="lng" th:value="${station != null ? station.lng : ''}" />
+                    <input type="hidden" id="lat" name="lat" th:value="${station != null ? station.lat : 53.5511}" />
+                    <input type="hidden" id="lng" name="lng" th:value="${station != null ? station.lng : 9.9937}" />
                     <div class="form-row">
                         <div class="form-group">
                             <label for="name">Name</label>
@@ -50,8 +50,8 @@
                     var defaultLat = 53.5511;
                     var defaultLng = 9.9937;
                     
-                    var lat = [[${station != null ? station.lat : ''}]] || defaultLat;
-                    var lng = [[${station != null ? station.lng : ''}]] || defaultLng;
+                    var lat = [[${station != null ? station.lat : 53.5511}]];
+                    var lng = [[${station != null ? station.lng : 9.9937}]];
 
                     var map = L.map('position-map').setView([lat, lng], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
