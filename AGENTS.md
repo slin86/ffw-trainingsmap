@@ -135,17 +135,15 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] Templates: stations.html, incidents.html with sidebar navigation
 - [x] Fix type casting issue for LocationRepository.findById()
 
-### M14: Station/Incident Controller Bugfixes und Tests (complete)
+### M15: Create/Update Forms with Map for Station and Incident (complete)
 
-- [x] StationController: PUT /api/stations/{id} hinzugefuegt (ADMIN-only, 404 bei unbekannter ID)
-- [x] StationController.findAll() umbenannt (keine Fetch-Joins benoetigt)
-- [x] IncidentController/StationController: einheitliche Fehlermeldungen mit `ResponseStatusException`
-- [x] AdminStationController/AdminIncidentController: 404 bei unknown IDs statt IllegalArgumentException
-- [x] StationControllerTest: GET, POST (ADMIN-only), PUT (ADMIN-only), DELETE (ADMIN-only) + 404-Faelle
-- [x] IncidentControllerTest: GET (?all=true/false), POST/PUT/DELETE (ADMIN-only), PATCH /active (ADMIN-only)
-- [x] AdminStationControllerTest: GET, POST (create+redirect), POST /{id}/delete (inkl. 404-Fall)
-- [x] AdminIncidentControllerTest: GET (?all=true), POST (create), POST /{id}/toggle, POST /{id}/delete
-- [x] Alle 4 neue Tests gruen mit `./gradlew test`
+- [x] Separate form templates `admin/station-form.html` and `admin/incident-form.html`
+- [x] Leaflet map integration in forms with click-to-set-position and draggable marker
+- [x] AdminStationController: GET /new, GET/{id}/edit, POST/{id} (update) routes added
+- [x] AdminIncidentController: GET /new, GET/{id}/edit, POST/{id} (update + active toggle) routes added
+- [x] admin/stations.html and admin/incidents.html: removed inline forms, added "New" button + "Edit" links per row
+- [x] Tests expanded: 6 new AdminStationControllerTest cases, 7 new AdminIncidentControllerTest cases
+- [x] All tests pass with `./gradlew test`
 
 ## Noch offen
 
