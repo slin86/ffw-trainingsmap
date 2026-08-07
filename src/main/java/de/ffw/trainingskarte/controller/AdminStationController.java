@@ -48,18 +48,41 @@ public class AdminStationController {
         return "admin/stations";
     }
 
-    @PostMapping
-    public String create(@RequestParam String name,
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        model.addAttribute("station", new Station());
+        model.addAttribute("formAction", "/admin/stations");
+        return "admin/station-form";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model, HttpSession session) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Station not found: " + id));
+        
+        model.addAttribute("station", station);
+        model.addAttribute("formAction", "/admin/stations/" + id);
+        
+        return "admin/station-form";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable Long id,
+                         @RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
                          HttpSession session) {
-        Station station = new Station();
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Station not found: " + id));
+        
         station.setName(name);
         station.setLat(lat);
         station.setLng(lng);
+        station.setDescription(description);
         stationRepository.save(station);
-
-        session.setAttribute("flashMessage", "Feuerwache '" + name + "' angelegt");
+        
+        session.setAttribute("flashMessage", "Feuerwache '" + name + "' aktualisiert");
         return "redirect:/admin/stations";
     }
 

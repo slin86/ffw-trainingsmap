@@ -19,25 +19,7 @@
                 <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
-                <div>
-                    <h2>Neue Feuerwache anlegen</h2>
-                    <form method="post" th:action="@{/admin/stations}">
-                        <input type="hidden" id="createLat" name="lat" />
-                        <input type="hidden" id="createLng" name="lng" />
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" name="name" required placeholder="z.B. Feuerwache 1" />
-                            </div>
-                        </div>
-                        <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
-                        <div class="form-section">
-                            <h2>Position (auf der Karte klicken)</h2>
-                            <div id="position-map"></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Anlegen</button>
-                    </form>
-                </div>
+                      <a th:href="@{/admin/stations/new}" class="btn btn-primary">Neue Feuerwache anlegen</a>
 
                 <h2>Feuerwachen (Stationen)</h2>
                 <table th:if="${stations != null and !stations.empty}">
@@ -53,9 +35,7 @@
                             <td><strong th:text="${s.name}"></strong></td>
                             <td><span th:text="${#numbers.formatDecimal(s.lat, 4, 2)} + ', ' + ${#numbers.formatDecimal(s.lng, 4, 2)}"></span></td>
                             <td class="actions">
-                                <form method="post" th:action="@{/admin/stations/{id}/delete(id=${s.id})}" style="display:inline;" class="confirm-form" onsubmit="return confirm('Feuerwache wirklich löschen?')">
-                                    <button type="submit">Löschen</button>
-                                </form>
+                              <a th:href="@{/admin/stations/{id}/edit(id=${s.id})}" class="btn btn-secondary">Bearbeiten</a>
                             </td>
                         </tr>
                     </tbody>

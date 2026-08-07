@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Einsatzort bearbeiten - Verwaltung</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .form-section {
+            margin: 1rem 0;
+        }
+        #position-map {
+            height: 400px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+        }
+        .checkbox-group {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-page">
+        <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
+        <main class="admin-content">
+            <div class="page-header">
+                <h1>Einsatzort verwalten</h1>
+                <a th:href="@{/admin/incidents}">&larr; Zurück zur Liste</a>
+            </div>
+            <div class="container">
+                <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
+                <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
+
+                <form th:action="${formAction}" th:object="${incident}" method="post">
+                    <input type="hidden" id="latField" name="lat" th:field="*{lat}" />
+                    <input type="hidden" id="lngField" name="lng" th:field="*{lng}" />
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" th:field="*{name}" required placeholder="z.B. Brand in Hafen City" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="description">Beschreibung</label>
+                            <textarea id="description" name="description" th:field="*{description}" placeholder="Optional: Beschreibung des Einsatzorts"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="checkbox-group" th:if="${incident != null}">
+                        <input type="checkbox" id="active" name="active" th:field="*{active}" />
+                        <label for="active" style="display: inline;">Einsatzort aktiv</label>
+                    </div>
+                    
+                    <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
+                    <div class="form-section">
+                        <h2>Position (auf der Karte klicken)</h2>
+                        <div id="position-map"></div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Speichern</button>
+                        <a th:href="@{/admin/incidents}" class="btn btn-secondary">Abbrechen</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const lat = [[${incident != null ? incident.lat : 53.5511}]];
+            const lng = [[${incident != null ? incident.lng : 9.9937}]];
+            
+            const map = L.map('position-map').setView([lat, lng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            let marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+            marker.on('dragend', function(e) {
+                const pos = e.target.getLatLng();
+                document.getElementById('latField').value = pos.lat;
+                document.getElementById('lngField').value = pos.lng;
+            });
+
+            map.on('click', function(e) {
+                marker.setLatLng(e.latlng);
+                document.getElementById('latField').value = e.latlng.lat;
+                document.getElementById('lngField').value = e.latlng.lng;
+            });
+
+            // Update coordinates from form fields on page load
+            marker.on('move', function(e) {
+                const pos = marker.getLatLng();
+                document.getElementById('latField').value = pos.lat;
+                document.getElementById('lngField').value = pos.lng;
+            });
+        });
+    </script>
+</body>
+</html>

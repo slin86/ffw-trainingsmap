@@ -51,19 +51,45 @@ public class AdminIncidentController {
         return "admin/incidents";
     }
 
-    @PostMapping
-    public String create(@RequestParam String name,
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        Incident incident = new Incident();
+        incident.setActive(true);
+        model.addAttribute("incident", incident);
+        model.addAttribute("formAction", "/admin/incidents");
+        return "admin/incident-form";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model, HttpSession session) {
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found: " + id));
+        
+        model.addAttribute("incident", incident);
+        model.addAttribute("formAction", "/admin/incidents/" + id);
+        
+        return "admin/incident-form";
+    }
+
+    @PostMapping("/{id}")
+    public String update(@PathVariable Long id,
+                         @RequestParam String name,
                          @RequestParam double lat,
                          @RequestParam double lng,
+                         @RequestParam(required = false) String description,
+                         @RequestParam(required = false, defaultValue = "false") boolean active,
                          HttpSession session) {
-        Incident incident = new Incident();
+        Incident incident = incidentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Incident not found: " + id));
+        
         incident.setName(name);
         incident.setLat(lat);
         incident.setLng(lng);
-        incident.setActive(true);
+        incident.setDescription(description);
+        incident.setActive(active);
         incidentRepository.save(incident);
-
-        session.setAttribute("flashMessage", "Einsatzort '" + name + "' angelegt");
+        
+        session.setAttribute("flashMessage", "Einsatzort '" + name + "' aktualisiert");
         return "redirect:/admin/incidents";
     }
 
