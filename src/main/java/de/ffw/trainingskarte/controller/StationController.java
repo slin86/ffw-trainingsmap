@@ -42,6 +42,7 @@ public class StationController {
         station.setName(request.name());
         station.setLat(request.lat());
         station.setLng(request.lng());
+        station.setDescription(request.description());
         var location = stationRepository.save(station);
         return ResponseEntity.status(HttpStatus.CREATED).body(location);
     }
@@ -55,6 +56,7 @@ public class StationController {
         station.setName(request.name());
         station.setLat(request.lat());
         station.setLng(request.lng());
+        station.setDescription(request.description());
 
         station = stationRepository.save(station);
         return ResponseEntity.ok(station);

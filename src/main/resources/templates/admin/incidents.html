@@ -24,36 +24,18 @@
                     <a th:href="@{/admin/incidents(all=true)}" class="btn btn-secondary" th:classappend="${showAll} ? 'btn-active' : ''">Alle Anzeigen</a>
                 </div>
 
-                <div>
-                    <h2>Neuen Einsatzort anlegen</h2>
-                    <form method="post" th:action="@{/admin/incidents}">
-                        <input type="hidden" id="createLat" name="lat" />
-                        <input type="hidden" id="createLng" name="lng" />
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" name="name" required placeholder="z.B. Brand in Hafen City" />
-                            </div>
-                        </div>
-                        <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
-                        <div class="form-section">
-                            <h2>Position (auf der Karte klicken)</h2>
-                            <div id="position-map"></div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Anlegen</button>
-                    </form>
-                </div>
+                <a th:href="@{/admin/incidents/new}" class="btn btn-primary">Neuen Einsatzort anlegen</a>
 
                 <h2>Einsatzorte</h2>
                 <table th:if="${incidents != null and !incidents.empty}">
-                    <thead>
+                    <head>
                         <tr>
                             <th>Name</th>
                             <th>Status</th>
                             <th>Koordinaten</th>
                             <th>Aktionen</th>
                         </tr>
-                    </thead>
+                    </head>
                     <tbody>
                         <tr th:each="i : ${incidents}">
                             <td><strong th:text="${i.name}"></strong></td>
@@ -66,6 +48,7 @@
                                 <form method="post" th:action="@{/admin/incidents/{id}/toggle(id=${i.id})}" style="display:inline;" class="confirm-form">
                                     <button type="submit" th:text="${i.active} ? 'Deaktivieren' : 'Aktivieren'"></button>
                                 </form>
+                                <a th:href="@{/admin/incidents/{id}/edit(id=${i.id})}" class="btn btn-secondary">Bearbeiten</a>
                                 <form method="post" th:action="@{/admin/incidents/{id}/delete(id=${i.id})}" style="display:inline;" class="confirm-form" onsubmit="return confirm('Einsatzort wirklich löschen?')">
                                     <button type="submit">Löschen</button>
                                 </form>
@@ -74,7 +57,7 @@
                     </tbody>
                 </table>
 
-                <p th:if="${incidents == null or incidents.empty}" style="color:#666;" th:text="${showAll} ? 'Keine Einsatzorte gefunden.' : 'Keine aktiven Einsatzorte gefunden.'"></p>
+                <p th:if="${incidents == null or incidents.empty}" style="color:#666;" th:text="${showAll} ? 'Keine Einsatzorte gefunden.' : 'Keineaktiven Einsatzorte gefunden.'"></p>
             </div>
 
             <script th:inline="javascript">

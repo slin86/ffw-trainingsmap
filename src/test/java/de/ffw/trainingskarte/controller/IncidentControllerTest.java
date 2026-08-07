@@ -46,6 +46,7 @@ class IncidentControllerTest {
         testIncident.setLat(53.55);
         testIncident.setLng(9.99);
         testIncident.setActive(true);
+        testIncident.setDescription("Test description");
     }
 
     @BeforeEach
@@ -89,7 +90,7 @@ class IncidentControllerTest {
         mockMvc.perform(post("/api/incidents")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Einsatzort\",\"lat\":53.5,\"lng\":9.9}"))
+                .content("{\"name\":\"Einsatzort\",\"lat\":53.5,\"lng\":9.9, \"description\":\"Test description\"}"))
             .andExpect(status().isForbidden());
     }
 
@@ -101,7 +102,7 @@ class IncidentControllerTest {
         mockMvc.perform(post("/api/incidents")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Einsatzort\",\"lat\":53.5,\"lng\":9.9}"))
+                .content("{\"name\":\"Einsatzort\",\"lat\":53.5,\"lng\":9.9, \"description\":\"Test description\"}"))
             .andExpect(status().isCreated());
     }
 
@@ -114,9 +115,10 @@ class IncidentControllerTest {
         mockMvc.perform(put("/api/incidents/1")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0, \"description\":\"Updated description\"}"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.name").value("Neuer Name"));
+            .andExpect(jsonPath("$.name").value("Neuer Name"))
+            .andExpect(jsonPath("$.description").value("Updated description"));
     }
 
     @Test
@@ -127,7 +129,7 @@ class IncidentControllerTest {
         mockMvc.perform(put("/api/incidents/999")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0, \"description\":\"Updated description\"}"))
             .andExpect(status().isNotFound());
     }
 
@@ -137,7 +139,7 @@ class IncidentControllerTest {
         mockMvc.perform(put("/api/incidents/1")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0, \"description\":\"Updated description\"}"))
             .andExpect(status().isForbidden());
     }
 

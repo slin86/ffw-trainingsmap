@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -45,6 +44,7 @@ class AdminIncidentControllerTest {
         testIncident.setLat(53.55);
         testIncident.setLng(9.99);
         testIncident.setActive(true);
+        testIncident.setDescription("Test description");
     }
 
     @BeforeEach
@@ -81,6 +81,34 @@ class AdminIncidentControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    void newIncidentReturnsOk() throws Exception {
+        mockMvc.perform(get("/admin/incidents/new"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/incident-form"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void editIncidentReturnsOk() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+
+        mockMvc.perform(get("/admin/incidents/1/edit"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/incident-form"))
+            .andExpect(model().attribute("incident", testIncident));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void editIncidentNotFoundReturns404() throws Exception {
+        when(incidentRepository.findById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/admin/incidents/999/edit"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
     void createAsAdminReturnsRedirect() throws Exception {
         when(incidentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -88,7 +116,8 @@ class AdminIncidentControllerTest {
                 .with(csrf())
                 .param("name", "Einsatzort")
                 .param("lat", "53.5")
-                .param("lng", "9.9"))
+                .param("lng", "9.9")
+                .param("description", "Test description"))
             .andExpect(status().is3xxRedirection());
     }
 
@@ -99,7 +128,37 @@ class AdminIncidentControllerTest {
                 .with(csrf())
                 .param("name", "Einsatzort")
                 .param("lat", "53.5")
-                .param("lng", "9.9"))
+                .param("lng", "9.9")
+                .param("description", "Test description"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void updateAsAdminReturnsRedirect() throws Exception {
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(testIncident));
+        when(incidentRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        mockMvc.perform(post("/admin/incidents/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0")
+                .param("description", "Updated description")
+                .param("active", "false"))
+            .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
+    @WithMockUser(roles = "VIEWER")
+    void updateAsViewerReturnsForbidden() throws Exception {
+        mockMvc.perform(post("/admin/incidents/1")
+                .with(csrf())
+                .param("name", "Neuer Name")
+                .param("lat", "53.6")
+                .param("lng", "10.0")
+                .param("description", "Updated description")
+                .param("active", "false"))
             .andExpect(status().isForbidden());
     }
 

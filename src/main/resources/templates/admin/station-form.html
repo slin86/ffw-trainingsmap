@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title th:if="${station}">Feuerwache bearbeiten</title>
+    <title th:unless="${station}">Neue Feuerwache anlegen</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="admin-page">
+        <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
+        <main class="admin-content">
+            <div class="page-header">
+                <h1 th:if="${station}">Feuerwache bearbeiten</h1>
+                <h1 th:unless="${station}">Neue Feuerwache anlegen</h1>
+                <a th:href="@{/}">&larr; Karte anzeigen</a>
+            </div>
+            <div class="container">
+                <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
+                <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
+
+                <form method="post" th:action="${station} ? '@{/admin/stations/' + station.id + '}' : '@{/admin/stations}'">
+                    <input type="hidden" id="createLat" name="lat" th:value="${station?.lat}" />
+                    <input type="hidden" id="createLng" name="lng" th:value="${station?.lng}" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required placeholder="z.B. Feuerwache 1" th:value="${station?.name}" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="description">Beschreibung</label>
+                            <textarea id="description" name="description" placeholder="Optional: zusätzliche Informationen" th:text="${station?.description}"></textarea>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
+                    <div class="form-section">
+                        <h2>Position (auf der Karte klicken)</h2>
+                        <div id="position-map"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" th:text="${station} ? 'Update' : 'Anlegen'"></button>
+                </form>
+            </div>
+
+            <script th:inline="javascript">
+                document.addEventListener('DOMContentLoaded', function() {
+                    var lat = [[${station?.lat} != null ? station.lat : 53.5511]];
+                    var lng = [[${station?.lng} != null ? station.lng : 9.9937]];
+
+                    var map = L.map('position-map').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+
+                    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                    marker.on('dragend', function(e) {
+                        var pos = e.target.getLatLng();
+                        document.getElementById('createLat').value = pos.lat;
+                        document.getElementById('createLng').value = pos.lng;
+                    });
+
+                    map.on('click', function(e) {
+                        marker.setLatLng(e.latlng);
+                        document.getElementById('createLat').value = e.latlng.lat;
+                        document.getElementById('createLng').value = e.latlng.lng;
+                    });
+                });
+            </script>
+        </main>
+    </div>
+</body>
+</html>

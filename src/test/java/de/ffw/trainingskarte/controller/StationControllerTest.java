@@ -49,6 +49,7 @@ class StationControllerTest {
         testStation.setName("Feuerwache 1");
         testStation.setLat(53.55);
         testStation.setLng(9.99);
+        testStation.setDescription("Test description");
     }
 
     @BeforeEach
@@ -91,7 +92,7 @@ class StationControllerTest {
         mockMvc.perform(post("/api/stations")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Feuerwache\",\"lat\":53.5,\"lng\":9.9}"))
+                .content("{\"name\":\"Feuerwache\",\"lat\":53.5,\"lng\":9.9, \"description\":\"Test description\"}"))
             .andExpect(status().isForbidden());
     }
 
@@ -103,7 +104,7 @@ class StationControllerTest {
         mockMvc.perform(post("/api/stations")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Feuerwache\",\"lat\":53.5,\"lng\":9.9}"))
+                .content("{\"name\":\"Feuerwache\",\"lat\":53.5,\"lng\":9.9, \"description\":\"Test description\"}"))
             .andExpect(status().isCreated());
     }
 
@@ -116,9 +117,10 @@ class StationControllerTest {
         mockMvc.perform(put("/api/stations/1")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0, \"description\":\"Updated description\"}"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.name").value("Neuer Name"));
+            .andExpect(jsonPath("$.name").value("Neuer Name"))
+            .andExpect(jsonPath("$.description").value("Updated description"));
     }
 
     @Test
@@ -129,7 +131,7 @@ class StationControllerTest {
         mockMvc.perform(put("/api/stations/999")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0, \"description\":\"Updated description\"}"))
             .andExpect(status().isNotFound());
     }
 
@@ -139,7 +141,7 @@ class StationControllerTest {
         mockMvc.perform(put("/api/stations/1")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0}"))
+                .content("{\"name\":\"Neuer Name\",\"lat\":53.6,\"lng\":10.0, \"description\":\"Updated description\"}"))
             .andExpect(status().isForbidden());
     }
 

@@ -48,6 +48,7 @@ class AdminStationControllerTest {
         testStation.setName("Feuerwache 1");
         testStation.setLat(53.55);
         testStation.setLng(9.99);
+        testStation.setDescription("Test description");
     }
 
     @BeforeEach
@@ -64,25 +65,21 @@ class AdminStationControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void listAsAdminReturnsOk() throws Exception {
-        when(stationRepository.findAll()).thenReturn(java.util.List.of(testStation));
-
-        mockMvc.perform(get("/admin/stations"))
+    void newStationReturnsOk() throws Exception {
+        mockMvc.perform(get("/admin/stations/new"))
             .andExpect(status().isOk())
-            .andExpect(view().name("admin/stations"));
+            .andExpect(view().name("admin/station-form"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createAsAdminReturnsRedirect() throws Exception {
-        when(stationRepository.save(any(Station.class))).thenAnswer(i -> i.getArgument(0));
+    void editStationReturnsOk() throws Exception {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(testStation));
 
-        mockMvc.perform(post("/admin/stations")
-                .with(csrf())
-                .param("name", "Feuerwache")
-                .param("lat", "53.5")
-                .param("lng", "9.9"))
-            .andExpect(status().is3xxRedirection());
+        mockMvc.perform(get("/admin/stations/1/edit"))
+            .andExpect(status().isOk())
+            .andExpect(view().name("admin/station-form"))
+            .andExpect(model().attribute("station", testStation));
     }
 
     @Test
