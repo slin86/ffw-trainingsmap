@@ -21,7 +21,7 @@
                 <div th:if="${flashMessage}" class="flash-msg" th:text="${flashMessage}"></div>
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
-                <form method="post" th:action="${incident} ? '@{/admin/incidents/' + incident.id + '}' : '@{/admin/incidents}'">
+                <form method="post" th:action="${incident} ? @{/admin/incidents/{id}(id=${incident.id})} : @{/admin/incidents}">
                     <input type="hidden" id="createLat" name="lat" th:value="${incident?.lat}" />
                     <input type="hidden" id="createLng" name="lng" th:value="${incident?.lng}" />
                     <div class="form-row">
