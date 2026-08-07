@@ -39,6 +39,16 @@
                     </div>
                     
                     <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
+                    
+                    <div class="form-section">
+                        <h2>Adresse suchen</h2>
+                        <div id="geocode-search" style="display:flex;gap:8px;margin-bottom:8px;">
+                            <input type="text" id="address-input" placeholder="Adresse eingeben (z.B. Rathausmarkt Hamburg)" style="flex:1;padding:6px;border:1px solid #ccc;border-radius:4px;" />
+                            <button type="button" id="search-address-btn" style="padding:6px 12px;background:#1976d2;color:white;border:none;border-radius:4px;cursor:pointer;">Adresse suchen</button>
+                        </div>
+                        <div id="geocode-error" class="flash-msg flash-error" style="display:none;"></div>
+                    </div>
+                    
                     <div class="form-section">
                         <h2>Position (auf der Karte klicken)</h2>
                         <div id="position-map"></div>
@@ -60,7 +70,7 @@
             <script th:inline="javascript">
                 document.addEventListener('DOMContentLoaded', function() {
                     var lat = [[${incident?.lat} != null ? incident.lat : 53.5511]];
-                    var lng = [[${incident?.lng} != null ? incident.lng : 9.9937]];
+                    var lng = [[${instance?.lng} != null ? incident.lng : 9.9937]];
 
                     var map = L.map('position-map').setView([lat, lng], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -80,6 +90,72 @@
                         document.getElementById('createLat').value = e.latlng.lat;
                         document.getElementById('createLng').value = e.latlng.lng;
                     });
+                    
+                    var csrfToken = [[${_csrf.token}]];
+                    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                    
+                    document.getElementById('search-address-btn').addEventListener('click', function() {
+                        var addressInput = document.getElementById('address-input');
+                        var address = addressInput.value.trim();
+                        
+                        if (!address) {
+                            showError('Bitte geben Sie eine Adresse ein');
+                            return;
+                        }
+                        
+                        hideError();
+                        showLoading(true);
+                        
+                        fetch('/api/geocode?address=' + encodeURIComponent(address), {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        })
+                        .then(function(response) {
+                            if (response.status === 200) {
+                                return response.json();
+                            } else if (response.status === 404) {
+                                throw new Error('Adresse nicht gefunden');
+                            } else {
+                                throw new Error('Fehler beim Laden der Adresse');
+                            }
+                        })
+                        .then(function(data) {
+                            marker.setLatLng([data.lat, data.lng]);
+                            map.panTo([data.lat, data.lng]);
+                            document.getElementById('createLat').value = data.lat.toFixed(6);
+                            document.getElementById('createLng').value = data.lng.toFixed(6);
+                            addressInput.value = data.displayName;
+                        })
+                        .catch(function(err) {
+                            showError(err.message || 'Fehler beim Laden der Adresse');
+                        })
+                        .finally(function() {
+                            showLoading(false);
+                        });
+                    });
+                    
+                    function showError(message) {
+                        var errorDiv = document.getElementById('geocode-error');
+                        errorDiv.textContent = message;
+                        errorDiv.style.display = 'block';
+                    }
+                    
+                    function hideError() {
+                        document.getElementById('geocode-error').style.display = 'none';
+                    }
+                    
+                    function showLoading(isLoading) {
+                        var btn = document.getElementById('search-address-btn');
+                        if (isLoading) {
+                            btn.textContent = 'Suche...';
+                            btn.disabled = true;
+                        } else {
+                            btn.textContent = 'Adresse suchen';
+                            btn.disabled = false;
+                        }
+                    }
                 });
             </script>
         </main>

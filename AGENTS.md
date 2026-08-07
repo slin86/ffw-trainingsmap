@@ -10,6 +10,7 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - Redis 7 fuer HTTP-Sessions (Spring Session, Cookie "SESSION", passwortgeschuetzt)
 - Spring Security 7 und Thymeleaf fuer Web UI
 - Leaflet + OpenStreetMap fuer die Karte (Vanilla JS, kein Framework)
+- **Nominatim API** fuer Adresssuche/Geocoding
 
 ## Konventionen
 
@@ -147,12 +148,21 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] AdminIncidentControllerTest: GET (?all=true), POST (create), POST /{id}/toggle, POST /{id}/delete
 - [x] Alle 4 neue Tests gruen mit `./gradlew test`
 
+### M15: Popup Description & Location Cleanup (complete)
+
+- [x] Description-Feld im Karten-Popup anzeigen (leer wenn null/leer, kein Leerzeichen)
+- [x] Active-Flag von Incidents bei Polling beruecksichtigt (`/api/incidents?all=false`)
+- [x] Marker/Sidebar aktualisieren ohne Reload bei Deaktivierung
+- [x] GeocodeController: Nominatim-API Proxy Endpoint `/api/geocode` mit Hamburg-Bounds (viewbox/bounded)
+- [x] Adress-Suche UI in station-form.html und incident-form.html (Karte + Adresse)
+- [x] GeocodeControllerTest: Unit-Tests fuer Parsing
+- [x] 10s-Polling loescht verwaiste Marker/Sidebar-Eintraege
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
 - Station hat kein `active`-Flag, nur Incident.
-- **description-Feld:** Kommt spaeter als separate Session.
 
 ## Guardrails
 
@@ -192,3 +202,5 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
   ./gradlew build eingehängt) – zwingt zumindest Formatierung/einfache Smells, ohne dass du das manuell reviewen musst.
 - JS: ESLint mit ein paar strengen Regeln (z. B. no-duplicate-case, Komplexitätsgrenzen pro Funktion) – bei map.js mit
   seinen sehr langen Funktionen (updateMap, updateSidebar) würde das schon beim Schreiben auffallen.
+
+(End of file - total 203 lines)

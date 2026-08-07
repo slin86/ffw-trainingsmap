@@ -202,6 +202,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var html = '<b>' + location.name + '</b><br/>';
         html += '<i>Typ:</i> ' + (location.location_type === 'STATION' ? 'Feuerwache' : 'Einsatzort') + '<br/>';
 
+        if (location.description && location.description.trim() !== '') {
+            html += '<hr/><i>Beschreibung:</i><br/>';
+            html += location.description;
+        }
+
         if (location.vehicles && location.vehicles.length > 0) {
             html += '<hr/><b>Fahrzeuge:</b><br/>';
             location.vehicles.forEach(function (v) {
@@ -491,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function fetchData() {
         var vehiclesPromise = fetch('/api/vehicles').then(function (response) { return response.json(); });
         var stationsPromise = fetch('/api/stations').then(function (response) { return response.json(); });
-        var incidentsPromise = fetch('/api/incidents?all=true').then(function (response) { return response.json(); });
+        var incidentsPromise = fetch('/api/incidents?all=false').then(function (response) { return response.json(); });
 
         Promise.all([vehiclesPromise, stationsPromise, incidentsPromise]).then(function (results) {
             var vehicles = results[0];
