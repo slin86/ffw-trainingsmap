@@ -20,8 +20,8 @@
                 <div th:if="${flashError}" class="flash-msg flash-error" th:text="${flashError}"></div>
 
                 <form method="post" th:action="${incident != null} ? @{/admin/incidents/{id}(id=${incident.id})} : @{/admin/incidents}">
-                    <input type="hidden" id="formLat" name="lat" />
-                    <input type="hidden" id="formLng" name="lng" />
+                    <input type="hidden" id="formLat" name="lat" th:value="${incident != null} ? ${incident.lat} : ''" />
+                    <input type="hidden" id="formLng" name="lng" th:value="${incident != null} ? ${incident.lng} : ''" />
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -58,15 +58,11 @@
 
             <script th:inline="javascript">
                 document.addEventListener('DOMContentLoaded', function() {
-                    var lat = 53.5511;
-                    var lng = 9.9937;
-
-                    #[
-                        if (${incident != null}) {
-                            lat = ${incident.lat};
-                            lng = ${incident.lng};
-                        }
-                    ]#
+                    var latField = document.getElementById('formLat');
+                    var lngField = document.getElementById('formLng');
+                    
+                    var lat = (latField.value && parseFloat(latField.value)) || 53.5511;
+                    var lng = (lngField.value && parseFloat(lngField.value)) || 9.9937;
 
                     var map = L.map('position-map').setView([lat, lng], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
