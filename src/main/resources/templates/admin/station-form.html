@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Feuerwache bearbeiten</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <div class="admin-page">
+        <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
+        <main class="admin-content">
+            <div class="page-header">
+                <h1>Feuerwache <span th:if="${station}" th:text="${station.name}" /> bearbeiten</h1>
+                <a th:href="@{/admin/stations}">&larr; Zurück zur Liste</a>
+            </div>
+            <div class="container">
+                <form method="post" th:action="${formAction}">
+                    <input type="hidden" id="editLat" name="lat" th:value="${station != null} ? ${station.lat} : 53.5511" />
+                    <input type="hidden" id="editLng" name="lng" th:value="${station != null} ? ${station.lng} : 9.9937" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" name="name" required 
+                                   th:value="${station != null} ? ${station.name} : ''" 
+                                   placeholder="z.B. Feuerwache 1" />
+                        </div>
+                    </div>
+                    <h3 style="margin-top: 1rem;">Koordinaten auswählen</h3>
+                    <div class="form-section">
+                        <h2>Position (auf der Karte klicken)</h2>
+                        <div id="position-map" style="height: 400px;"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </form>
+            </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var lat = document.getElementById('editLat').value * 1;
+                    var lng = document.getElementById('editLng').value * 1;
+
+                    var map = L.map('position-map').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+
+                    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+                    marker.on('dragend', function(e) {
+                        var pos = e.target.getLatLng();
+                        document.getElementById('editLat').value = pos.lat;
+                        document.getElementById('editLng').value = pos.lng;
+                    });
+
+                    map.on('click', function(e) {
+                        marker.setLatLng(e.latlng);
+                        document.getElementById('editLat').value = e.latlng.lat;
+                        document.getElementById('editLng').value = e.latlng.lng;
+                    });
+                });
+            </script>
+        </main>
+    </div>
+</body>
+</html>
