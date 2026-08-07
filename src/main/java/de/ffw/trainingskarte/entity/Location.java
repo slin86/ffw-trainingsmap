@@ -37,8 +37,13 @@ public abstract class Location {
     @Column(nullable = false)
     protected double lng;
 
+    @Column(name = "description")
+    protected String description;
+
     @Column(name = "created_at", nullable = false)
     protected OffsetDateTime createdAt;
+
+    @OneToMany(mappedBy = "location")
     @JsonBackReference
     protected List<Vehicle> vehicles = new ArrayList<>();
 
@@ -82,9 +87,17 @@ public abstract class Location {
     public String getDescription() {
         return description;
     }
-    
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public List<Vehicle> getVehicles() {
+        return vehicles;
     }
 
     @PrePersist
