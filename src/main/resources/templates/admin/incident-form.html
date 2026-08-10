@@ -70,7 +70,7 @@
             <script th:inline="javascript">
                 document.addEventListener('DOMContentLoaded', function() {
                     var lat = [[${incident?.lat} != null ? incident.lat : 53.5511]];
-                    var lng = [[${instance?.lng} != null ? incident.lng : 9.9937]];
+                    var lng = [[${incident?.lng} != null ? incident.lng : 9.9937]];
 
                     var map = L.map('position-map').setView([lat, lng], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -91,9 +91,6 @@
                         document.getElementById('createLng').value = e.latlng.lng;
                     });
                     
-                    var csrfToken = [[${_csrf.token}]];
-                    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-                    
                     document.getElementById('search-address-btn').addEventListener('click', function() {
                         var addressInput = document.getElementById('address-input');
                         var address = addressInput.value.trim();
@@ -107,9 +104,6 @@
                         showLoading(true);
                         
                         fetch('/api/geocode?address=' + encodeURIComponent(address), {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
                             credentials: 'same-origin'
                         })
                         .then(function(response) {
@@ -138,12 +132,17 @@
                     
                     function showError(message) {
                         var errorDiv = document.getElementById('geocode-error');
-                        errorDiv.textContent = message;
-                        errorDiv.style.display = 'block';
+                        if (errorDiv) {
+                            errorDiv.textContent = message;
+                            errorDiv.style.display = 'block';
+                        }
                     }
                     
                     function hideError() {
-                        document.getElementById('geocode-error').style.display = 'none';
+                        var errorDiv = document.getElementById('geocode-error');
+                        if (errorDiv) {
+                            errorDiv.style.display = 'none';
+                        }
                     }
                     
                     function showLoading(isLoading) {

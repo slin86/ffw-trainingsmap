@@ -82,9 +82,6 @@
                         document.getElementById('createLng').value = e.latlng.lng;
                     });
                     
-                    var csrfToken = [[${_csrf.token}]];
-                    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-                    
                     document.getElementById('search-address-btn').addEventListener('click', function() {
                         var addressInput = document.getElementById('address-input');
                         var address = addressInput.value.trim();
@@ -98,9 +95,6 @@
                         showLoading(true);
                         
                         fetch('/api/geocode?address=' + encodeURIComponent(address), {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
                             credentials: 'same-origin'
                         })
                         .then(function(response) {
@@ -129,12 +123,17 @@
                     
                     function showError(message) {
                         var errorDiv = document.getElementById('geocode-error');
-                        errorDiv.textContent = message;
-                        errorDiv.style.display = 'block';
+                        if (errorDiv) {
+                            errorDiv.textContent = message;
+                            errorDiv.style.display = 'block';
+                        }
                     }
                     
                     function hideError() {
-                        document.getElementById('geocode-error').style.display = 'none';
+                        var errorDiv = document.getElementById('geocode-error');
+                        if (errorDiv) {
+                            errorDiv.style.display = 'none';
+                        }
                     }
                     
                     function showLoading(isLoading) {

@@ -68,40 +68,64 @@ public class GeocodeController {
     GeocodeResponse parseNominatimResponse(String json) throws Exception {
         String trimmed = json.trim();
 
-        if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
-            return null;
+        int firstBracket = -1;
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (c == '[' || c == '{') {
+                firstBracket = i;
+                break;
+            }
         }
 
-        int firstBracket = trimmed.indexOf('{');
         if (firstBracket < 0) {
             return null;
         }
 
-        int lastBracket = trimmed.lastIndexOf('}');
-        if (lastBracket < firstBracket) {
+        String bracketedContent = trimmed.substring(firstBracket);
+
+        int braceCount = 0;
+        int endIdx = -1;
+        for (int i = 0; i < bracketedContent.length(); i++) {
+            char c = bracketedContent.charAt(i);
+            if (c == '[' || c == '{') braceCount++;
+            else if (c == ']' || c == '}') {
+                braceCount--;
+                if (braceCount == 0) {
+                    endIdx = i;
+                    break;
+                }
+            }
+        }
+
+        if (endIdx < 0 || braceCount != 0) {
             return null;
         }
 
-        String firstObject = trimmed.substring(firstBracket, lastBracket + 1);
+        String firstObject = bracketedContent.substring(0, endIdx + 1).trim();
 
         double lat = extractDouble(firstObject, "\"lat\"");
-        double lng = extractDouble(firstObject, "\"lon\"");
-        String displayName = extractString(firstObject, "\"display_name\"");
+        double lng = extractDouble(firstObject, "\"lng\"", "\"lon\"");
+        String displayName = extractString(firstObject, "\"displayName\"", "\"display_name\"");
 
         if (Double.isNaN(lat) || Double.isNaN(lng) || displayName == null) {
             return null;
         }
 
-        return new GeocodeResponse(lat, lng, displayName);
+        return new GeocodeResponse(Math.round(lat * 100000.0) / 100000.0, Math.round(lng * 100000.0) / 100000.0, displayName);
     }
 
-    double extractDouble(String json, String key) throws Exception {
-        int idx = json.indexOf(key);
+    double extractDouble(String json, String key1, String... extraKeys) throws Exception {
+        int idx = json.indexOf(key1);
+        for (String key : extraKeys) {
+            if (idx < 0) {
+                idx = json.indexOf(key);
+            }
+        }
         if (idx < 0) {
             return Double.NaN;
         }
 
-        String afterKey = json.substring(idx + key.length());
+        String afterKey = json.substring(idx + key1.length());
         afterKey = afterKey.trim();
 
         int colonIdx = afterKey.indexOf(':');
@@ -131,27 +155,41 @@ public class GeocodeController {
                 return Double.NaN;
             }
         } else {
-            int commaOrBrace = Math.min(
-                valueStr.indexOf(','),
-                valueStr.indexOf('}')
-            );
+            int commaIdx = valueStr.indexOf(',');
+            int braceIdx = valueStr.indexOf('}');
 
-            if (commaOrBrace < 0) {
-                commaOrBrace = valueStr.length();
+            int endIdxVal = -1;
+            if (commaIdx >= 0 && braceIdx >= 0) {
+                endIdxVal = Math.min(commaIdx, braceIdx);
+            } else if (commaIdx >= 0) {
+                endIdxVal = commaIdx;
+            } else if (braceIdx >= 0) {
+                endIdxVal = braceIdx;
+            } else {
+                endIdxVal = valueStr.length();
             }
 
-            String numStr = valueStr.substring(0, commaOrBrace).trim();
-            return Double.parseDouble(numStr);
+            String numStr = valueStr.substring(0, endIdxVal).trim();
+            try {
+                return Double.parseDouble(numStr);
+            } catch (NumberFormatException e) {
+                return Double.NaN;
+            }
         }
     }
 
-    String extractString(String json, String key) throws Exception {
-        int idx = json.indexOf(key);
+    String extractString(String json, String key1, String... extraKeys) throws Exception {
+        int idx = json.indexOf(key1);
+        for (String key : extraKeys) {
+            if (idx < 0) {
+                idx = json.indexOf(key);
+            }
+        }
         if (idx < 0) {
             return null;
         }
 
-        String afterKey = json.substring(idx + key.length());
+        String afterKey = json.substring(idx + key1.length());
         afterKey = afterKey.trim();
 
         int colonIdx = afterKey.indexOf(':');
