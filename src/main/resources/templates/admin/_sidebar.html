@@ -19,7 +19,7 @@
         <a th:href="@{/}">&larr; Karte anzeigen</a>
     </div>
     
-    <script th:if="${pageHeaderSelector != null}">
+    <script th:inline="javascript">
     (function() {
         window.toggleAdminSidebar = function() {
             var sidebar = document.querySelector('.admin-sidebar');
