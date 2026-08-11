@@ -200,12 +200,20 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 
 - [x] Viewport meta tag in ALLEN Templates (map.html, login.html, admin/*.html)
 - [x] map.html header: flex-wrap + username verstecken ab 400px
-- [x] map.html sidebar-overlay: Bottom-Sheet auf mobile (max-width: 600px), toggle mit transform
+- [x] map.html sidebar-overlay: FAB-Pattern auf mobile (max-width: 600px), Overlay nur per Click sichtbar
 - [x] Popup buttons: min 44px touch targets, padding erhöht für bessere Klickfläche
 - [x] Admin sidebar: off-canvas menu ab 768px mit Hamburger-Button
 - [x] Admin tables: horizontal scroll fuer mobile (wrapper div)
 - [x] Admin forms: form-row stackt vertikal ab 600px
 - [x] Admin map heights: reduziert auf 160px bei sehr engen Screens
+
+### M19b: Mobile Sidebar FAB-Pattern (complete)
+
+- [x] Bottom-Sheet durch FAB (runde rote Schaltfläche unten rechts) ersetzt
+- [x] Overlay on mobile: display none standard, mobile-open Klasse für Anzeige
+- [x] FAB verschwindet beim Öffnen des Overlays, X-Button schließt es wieder
+- [x] Click auf Listeneinträge auto-closed mobile sidebar + zoom to object
+- [x] Desktop: Sidebar-Overlay unverändert mit ▼ toggle (keine FAB sichtbar)
 
 ## Noch offen
 
