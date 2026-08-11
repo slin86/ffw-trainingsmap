@@ -35,6 +35,96 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var allStatusCodes = [1, 2, 3, 4, 6];
 
+    // Check-in state
+    var currentCheckinVehicleId = null;
+    var locationWatchId = null;
+    var lastPositionSentAt = 0;
+    var positionThrottleDelay = 10000; // 10 seconds minimum between updates
+
+    function getMyCheckin() {
+        fetch('/api/checkin/me')
+            .then(function(response) {
+                if (response.status === 204) {
+                    currentCheckinVehicleId = null;
+                    return;
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data && data.vehicleId) {
+                    currentCheckinVehicleId = data.vehicleId;
+                    startLocationWatchForVehicle(currentCheckinVehicleId);
+                }
+            })
+            .catch(function(err) {
+                console.error('Failed to get my check-in:', err);
+            });
+    }
+
+    function startLocationWatchForVehicle(vehicleId) {
+        if (!navigator.geolocation) {
+            alert('Geolocation wird von Ihrem Browser nicht unterstutzt.');
+            return;
+        }
+
+        stopLocationWatch();
+
+        var successCallback = function(position) {
+            var now = Date.now();
+            if (now - lastPositionSentAt >= positionThrottleDelay) {
+                updateVehiclePositionFromGeolocation(vehicleId, position);
+                lastPositionSentAt = now;
+            }
+        };
+
+        var errorCallback = function(error) {
+            console.error('Geolocation error:', error);
+        };
+
+        locationWatchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 10000
+        });
+    }
+
+    function stopLocationWatch() {
+        if (locationWatchId !== null) {
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+        }
+    }
+
+    function updateVehiclePositionFromGeolocation(vehicleId, position) {
+        var lat = position.coords.latitude;
+        var lng = position.coords.longitude;
+
+        if (lat < 53.3 || lat > 53.8 || lng < 9.6 || lng > 10.4) {
+            console.warn('Position outside Hamburg bounds:', lat, lng);
+            return;
+        }
+
+        var token = getCsrfToken();
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        var headers = { 'Content-Type': 'application/json' };
+        headers[header] = token;
+
+        fetch('/api/vehicles/' + vehicleId + '/position', {
+            method: 'PATCH',
+            headers: headers,
+            body: JSON.stringify({ lat: lat, lng: lng })
+        }).then(function(response) {
+            if (!response.ok) throw new Error('Position update failed');
+            return response.json();
+        }).then(function(updatedVehicle) {
+            if (updatedVehicle && markers[vehicleId]) {
+                markers[vehicleId].setLatLng([lat, lng]);
+            }
+        }).catch(function(err) {
+            console.error('Position update error:', err);
+        });
+    }
+
     function getStatusColor(status) {
         if (status === 1 || status === 2) return '#2ecc71';
         if (status === 3 || status === 4) return '#e74c3c';
@@ -189,6 +279,21 @@ document.addEventListener('DOMContentLoaded', function () {
         html += '<i>Letzte Aktualisierung:</i> ' + formatUpdatedAt(vehicle.updatedAt);
         html += '<hr/>';
 
+        var isMyCheckin = currentCheckinVehicleId === vehicle.id;
+        if (isMyCheckin) {
+            html += '<div style="background:#e8f5e9;padding:6px;margin:4px 0;border-radius:4px;">';
+            html += '✓ <b>Sie sind in diesem Fahrzeug eingecheckt</b><br/>';
+            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')">Auschecken</button>';
+            html += '</div>';
+        } else {
+            if (currentCheckinVehicleId) {
+                html += '<div style="background:#fff3e0;padding:6px;margin:4px 0;border-radius:4px;">';
+                html += '⚠ <b>Sie sind in einem anderen Fahrzeug eingecheckt</b>';
+                html += '</div>';
+            }
+            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')">Einchecken</button>';
+        }
+
         for (var i = 0; i < allStatusCodes.length; i++) {
             var code = allStatusCodes[i];
             var activeClass = vehicle.status === code ? ' status-active' : '';
@@ -254,6 +359,56 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Reset to default option
         select.value = '';
+    };
+
+    window.checkinVehicle = function(vehicleId) {
+        var token = getCsrfToken();
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        var headers = { 'Content-Type': 'application/json' };
+        headers[header] = token;
+
+        fetch('/api/vehicles/' + vehicleId + '/checkin', {
+            method: 'POST',
+            headers: headers,
+            body: ''
+        }).then(function(response) {
+            if (response.ok) {
+                currentCheckinVehicleId = vehicleId;
+                startLocationWatchForVehicle(vehicleId);
+                fetchData();
+            } else {
+                console.error('Check-in failed:', response.status);
+                alert('Einchecken fehlgeschlagen');
+            }
+        }).catch(function(err) {
+            console.error('Check-in error:', err);
+            alert('Einchecken fehlgeschlagen: ' + err.message);
+        });
+    };
+
+    window.checkoutVehicle = function(vehicleId) {
+        var token = getCsrfToken();
+        var header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        var headers = { 'Content-Type': 'application/json' };
+        headers[header] = token;
+
+        fetch('/api/vehicles/' + vehicleId + '/checkout', {
+            method: 'POST',
+            headers: headers,
+            body: ''
+        }).then(function(response) {
+            if (response.ok || response.status === 204) {
+                currentCheckinVehicleId = null;
+                stopLocationWatch();
+                fetchData();
+            } else {
+                console.error('Checkout failed:', response.status);
+                alert('Auschecken fehlgeschlagen');
+            }
+        }).catch(function(err) {
+            console.error('Checkout error:', err);
+            alert('Auschecken fehlgeschlagen: ' + err.message);
+        });
     };
 
     function updateSidebar(vehicles, stations, incidents) {
@@ -510,6 +665,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     fetchData();
     setInterval(fetchData, 10000);
+
+    // Get current user's check-in status on page load
+    getMyCheckin();
 
     // Setup location map if element exists
     setupLatLngMap();

@@ -171,6 +171,16 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] VehicleController.patchPosition: @PreAuthorize mit checkInService
 - [x] CheckInControllerTest: alle Endpoints abgedeckt
 
+### M17: Karte Check-In UI & Geolocation (complete)
+
+- [x] `map.js`: Status im Fahrzeug-Popup anzeigen
+- [x] Button "Einchecken"/"Auschecken" basierend auf Check-in-Status
+- [x] Warnung wenn in Anderem Fahrzeug eingecheckt
+- [x] `getMyCheckin()`: beim Laden der Seite Check-in laden
+- [x] `startLocationWatchForVehicle()`: watchPosition starten mit 10s Throttle
+- [x] `updateVehiclePositionFromGeolocation()`:Positionsaktualisierung an Server senden
+- [x] `stopLocationWatch()`: beim Auschecken Watch stoppen
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
