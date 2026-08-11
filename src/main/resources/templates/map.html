@@ -51,14 +51,19 @@
         }
         @media (max-width: 600px) {
             .sidebar-overlay {
+                display: none;
                 position: fixed;
+                top: auto;
                 bottom: 0;
                 left: 0;
                 right: 0;
                 width: 100%;
-                max-height: 60vh;
-                border-radius: 8px 8px 0 0;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+                height: 90vh;
+                border-radius: 12px 12px 0 0;
+            }
+            .sidebar-overlay.mobile-open {
+                display: flex;
+                z-index: 998;
             }
         }
         .sidebar-header {
@@ -72,7 +77,29 @@
             user-select: none;
         }
         .sidebar-header h2 { font-size: 1rem; }
-        .toggle-btn {
+        @media (max-width: 600px) {
+            .toggle-btn {
+                display: none;
+            }
+            .close-btn {
+                background: transparent;
+                border: none;
+                color: #ffcdd2;
+                font-size: 1.8rem;
+                cursor: pointer;
+                padding: 0;
+            }
+        }
+        @media (min-width: 601px) {
+            .toggle-btn {
+                background: transparent;
+                border: none;
+                color: #fff;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+        }
+
             background: transparent;
             border: none;
             color: #fff;
@@ -122,7 +149,28 @@
             color: #666;
         }
     </style>
-</head>
+    
+    @media (max-width: 600px) {
+        #sidebar-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #d32f2f;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            border: none;
+            cursor: pointer;
+        }
+    }
+    @media (min-width: 601px) {
 <body>
     <div class="header">
         <h1>FF Trainingskarte</h1>
@@ -137,11 +185,14 @@
         </div>
     </div>
     <div id="map"></div>
+    
+    <button type="button" id="sidebar-fab" onclick="openMobileSidebar()">&#9776;</button>
 
     <div class="sidebar-overlay" id="sidebar">
         <div class="sidebar-header" onclick="toggleSidebar()">
             <h2>Datenübersicht</h2>
-            <button class="toggle-btn" id="toggleBtn">▼</button>
+            <button type="button" class="close-btn" onclick="closeMobileSidebar()">&times;</button>
+            <button type="button" class="toggle-btn" id="toggleBtn">▼</button>
         </div>
         <div class="sidebar-content" id="sidebarContent">
             <div class="section-header">Fahrzeuge</div>

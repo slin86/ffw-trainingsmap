@@ -154,11 +154,23 @@ document.addEventListener('DOMContentLoaded', function () {
             overlay.classList.remove('sidebar-collapsed');
             btn.textContent = '▼';
         }
-        
-        // On mobile, ensure map bottom margin is removed when sidebar expands
-        var isMobile = window.matchMedia('(max-width: 600px)').matches;
-        if (isMobile && !sidebarCollapsed) {
-            overlay.style.transform = '';
+    }
+
+    function openMobileSidebar() {
+        var overlay = document.getElementById('sidebar');
+        var fab = document.getElementById('sidebar-fab');
+        if (overlay && fab) {
+            overlay.classList.add('mobile-open');
+            fab.style.display = 'none';
+        }
+    }
+
+    function closeMobileSidebar() {
+        var overlay = document.getElementById('sidebar');
+        var fab = document.getElementById('sidebar-fab');
+        if (overlay && fab) {
+            overlay.classList.remove('mobile-open');
+            fab.style.display = 'flex';
         }
     }
 
@@ -450,6 +462,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         markers[v.id].openPopup();
                         map.flyTo(markers[v.id].getLatLng(), 14);
                     }
+                    if (window.matchMedia('(max-width: 600px)').matches) {
+                        closeMobileSidebar();
+                    }
                 };
                 vehicleList.appendChild(item);
             });
@@ -477,6 +492,9 @@ document.addEventListener('DOMContentLoaded', function () {
                         locationMarkers[l.id].openPopup();
                         map.flyTo(locationMarkers[l.id].getLatLng(), 14);
                     }
+                    if (window.matchMedia('(max-width: 600px)').matches) {
+                        closeMobileSidebar();
+                    }
                 };
                 stationList.appendChild(item);
             });
@@ -503,6 +521,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (locationMarkers[l.id]) {
                         locationMarkers[l.id].openPopup();
                         map.flyTo(locationMarkers[l.id].getLatLng(), 14);
+                    }
+                    if (window.matchMedia('(max-width: 600px)').matches) {
+                        closeMobileSidebar();
                     }
                 };
                 incidentList.appendChild(item);
