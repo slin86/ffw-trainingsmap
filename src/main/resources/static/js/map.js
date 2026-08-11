@@ -724,4 +724,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    
+    window.openMobileSidebar = openMobileSidebar;
+    window.closeMobileSidebar = closeMobileSidebar;
 });
