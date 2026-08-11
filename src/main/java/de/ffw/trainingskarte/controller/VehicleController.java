@@ -8,6 +8,7 @@ import de.ffw.trainingskarte.entity.Location;
 import de.ffw.trainingskarte.entity.Vehicle;
 import de.ffw.trainingskarte.repository.LocationRepository;
 import de.ffw.trainingskarte.repository.VehicleRepository;
+import de.ffw.trainingskarte.service.CheckInService;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +39,12 @@ public class VehicleController {
 
     private final VehicleRepository vehicleRepository;
     private final LocationRepository locationRepository;
+    private final CheckInService checkInService;
 
-    public VehicleController(VehicleRepository vehicleRepository, LocationRepository locationRepository) {
+    public VehicleController(VehicleRepository vehicleRepository, LocationRepository locationRepository, CheckInService checkInService) {
         this.vehicleRepository = vehicleRepository;
         this.locationRepository = locationRepository;
+        this.checkInService = checkInService;
     }
 
     @GetMapping
@@ -109,7 +112,7 @@ public class VehicleController {
     }
 
     @PatchMapping("/{id}/position")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @checkInService.isCheckedIn(#id, authentication.name)")
     public ResponseEntity<?> patchPosition(@PathVariable Long id, @RequestBody PositionRequest request) {
         if (request.lat() < MIN_LAT || request.lat() > MAX_LAT
             || request.lng() < MIN_LNG || request.lng() > MAX_LNG) {

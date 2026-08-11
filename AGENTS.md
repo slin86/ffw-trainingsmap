@@ -158,6 +158,19 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] GeocodeControllerTest: Unit-Tests fuer Parsing
 - [x] 10s-Polling loescht verwaiste Marker/Sidebar-Eintraege
 
+### M16: Check-In-Feature (complete)
+
+- [x] Flyway Migration `V6__vehicle_checkin.sql`: Tabelle mit unique username constraint
+- [x] Entity `VehicleCheckin` mit @ManyToOne Vehicle, username, checkedInAt
+- [x] Repository `VehicleCheckinRepository` mit findByUsername + findByVehicleId
+- [x] Service `CheckInService` mit isCheckedIn(Long vehicleId, String username)
+- [x] Controller `CheckInController`:
+  - POST /api/vehicles/{id}/checkin (VIEWER+ADMIN, löscht alter Check-in)
+  - POST /api/vehicles/{id}/checkout (VIEWER+ADMIN, idempotent)
+  - GET /api/checkin/me (liefert aktuelles vehicleId oder 204 No Content)
+- [x] VehicleController.patchPosition: @PreAuthorize mit checkInService
+- [x] CheckInControllerTest: alle Endpoints abgedeckt
+
 ## Noch offen
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das

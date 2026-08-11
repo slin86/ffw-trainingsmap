@@ -12,6 +12,7 @@ import de.ffw.trainingskarte.entity.Vehicle;
 import de.ffw.trainingskarte.repository.AppUserRepository;
 import de.ffw.trainingskarte.repository.LocationRepository;
 import de.ffw.trainingskarte.repository.VehicleRepository;
+import de.ffw.trainingskarte.service.CheckInService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ class VehicleControllerTest {
 
     @MockitoBean
     private LocationRepository locationRepository;
+
+    @MockitoBean
+    private CheckInService checkInService;
 
     private MockMvc mockMvc;
 
