@@ -15,6 +15,10 @@
         .header h1 { font-size: 1.25rem; white-space: nowrap; }
         .header-right { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; flex-wrap: wrap; }
         .header a { color: #ffcdd2; text-decoration: none; }
+        .admin-icon {
+            font-size: 1.3rem;
+            display: inline-block;
+        }
         .header a:hover { color: #fff; }
         .header button { background: transparent; border: 1px solid #ffcdd2; color: #ffcdd2; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
         .header button:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: #fff; }
@@ -25,7 +29,7 @@
             white-space: nowrap;
         }
         @media (max-width: 400px) {
-            .header-right > span:first-child { display: none; }
+            .header-right > .username { display: none; }
         }
         #map { flex: 1; min-height: 0; }
 
@@ -182,9 +186,8 @@
     <div class="header">
         <h1>FF Trainingskarte</h1>
         <div class="header-right">
-            <span th:if="${isAdmin}" style="display:none;"></span>
-            <a th:if="${isAdmin}" href="/admin/vehicles">Verwaltung</a>
-            <span>Angemeldet als <strong th:text="${username}"></strong></span>
+            <a th:if="${isAdmin}" href="/admin/vehicles" class="admin-icon" title="Verwaltung" aria-label="Verwaltung">⚙</a>
+            <strong th:text="${username}" class="username"></strong>
             <span id="app-version"></span>
             <form th:action="@{/logout}" method="post" style="margin:0">
                 <button type="submit">Abmelden</button>
