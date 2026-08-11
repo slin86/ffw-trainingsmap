@@ -29,8 +29,19 @@
         }
         #map { flex: 1; min-height: 0; }
 
-        .status-btn { display: block; width: 100%; padding: 8px 12px; margin: 2px 0; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 0.9rem; color: #333; text-align: left; min-height: 44px; display: flex; align-items: center; }
+        .status-btn { display: block; width: 100%; padding: 8px 12px; margin: 2px 0; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 0.9rem; color: #333; text-align: left; min-height: auto; display: flex; align-items: center; }
         .status-btn:hover { background: #f5f5f5; }
+        
+        @media (max-width: 600px) {
+            .status-btn { min-height: 44px; }
+            .checkin-btn {
+                min-height: 44px;
+                padding: 8px 12px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
 
         .status-active { background: #2ecc71 !important; border-color: #2ecc71 !important; color: #fff !important; font-weight: bold; }
 
@@ -97,6 +108,9 @@
                 color: #fff;
                 font-size: 1.5rem;
                 cursor: pointer;
+            }
+            .close-btn {
+                display: none;
             }
         }
         .sidebar-content {

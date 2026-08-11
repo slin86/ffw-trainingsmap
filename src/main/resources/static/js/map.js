@@ -299,17 +299,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var isMyCheckin = currentCheckinVehicleId === vehicle.id;
         if (isMyCheckin) {
-            html += '<div style="background:#e8f5e9;padding:6px;margin:4px 0;border-radius:4px;">';
+            html += '<div class="checkin-info-checkedin">';
             html += '✓ <b>Sie sind in diesem Fahrzeug eingecheckt</b><br/>';
-            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')" style="padding:8px 12px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;">Auschecken</button>';
+            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')" class="checkin-btn">Auschecken</button>';
             html += '</div>';
         } else {
             if (currentCheckinVehicleId) {
-                html += '<div style="background:#fff3e0;padding:6px;margin:4px 0;border-radius:4px;">';
+                html += '<div class="checkin-info-other">';
                 html += '⚠ <b>Sie sind in einem anderen Fahrzeug eingecheckt</b>';
                 html += '</div>';
             }
-            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')" style="padding:8px 12px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;">Einchecken</button>';
+            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')" class="checkin-btn">Einchecken</button>';
         }
 
         for (var i = 0; i < allStatusCodes.length; i++) {
@@ -714,12 +714,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // Setup location map if element exists
     setupLatLngMap();
 
+    // Toggle button click handler for desktop sidebar collapse
+    var toggleBtn = document.getElementById('toggleBtn');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+    }
+
     // Header click handler for desktop sidebar collapse
     var header = document.getElementById('sidebarHeader');
     if (header) {
         header.addEventListener('click', function(e) {
-            // Only handle clicks that don't hit buttons
-            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'H2') {
+            // Only handle clicks that don't hit close-btn or toggle-btn
+            if (!e.target.closest('.close-btn') && !e.target.closest('.toggle-btn') && e.target.tagName !== 'H2') {
                 toggleSidebar();
             }
         });
