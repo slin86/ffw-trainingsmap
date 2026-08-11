@@ -196,6 +196,17 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
   - Version als Tag zu Docker-Publish hinzugefügt
   - Neuer Schritt "Update deployment.yaml" zum automatischen Commit per Bot
 
+### M19: Mobile Responsive Design (complete)
+
+- [x] Viewport meta tag in ALLEN Templates (map.html, login.html, admin/*.html)
+- [x] map.html header: flex-wrap + username verstecken ab 400px
+- [x] map.html sidebar-overlay: Bottom-Sheet auf mobile (max-width: 600px), toggle mit transform
+- [x] Popup buttons: min 44px touch targets, padding erhöht für bessere Klickfläche
+- [x] Admin sidebar: off-canvas menu ab 768px mit Hamburger-Button
+- [x] Admin tables: horizontal scroll fuer mobile (wrapper div)
+- [x] Admin forms: form-row stackt vertikal ab 600px
+- [x] Admin map heights: reduziert auf 160px bei sehr engen Screens
+
 ## Noch offen
 
 

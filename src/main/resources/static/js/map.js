@@ -154,6 +154,12 @@ document.addEventListener('DOMContentLoaded', function () {
             overlay.classList.remove('sidebar-collapsed');
             btn.textContent = '▼';
         }
+        
+        // On mobile, ensure map bottom margin is removed when sidebar expands
+        var isMobile = window.matchMedia('(max-width: 600px)').matches;
+        if (isMobile && !sidebarCollapsed) {
+            overlay.style.transform = '';
+        }
     }
 
     function setupLatLngMap() {
@@ -283,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isMyCheckin) {
             html += '<div style="background:#e8f5e9;padding:6px;margin:4px 0;border-radius:4px;">';
             html += '✓ <b>Sie sind in diesem Fahrzeug eingecheckt</b><br/>';
-            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')">Auschecken</button>';
+            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')" style="padding:8px 12px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;">Auschecken</button>';
             html += '</div>';
         } else {
             if (currentCheckinVehicleId) {
@@ -291,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html += '⚠ <b>Sie sind in einem anderen Fahrzeug eingecheckt</b>';
                 html += '</div>';
             }
-            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')">Einchecken</button>';
+            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')" style="padding:8px 12px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;">Einchecken</button>';
         }
 
         for (var i = 0; i < allStatusCodes.length; i++) {

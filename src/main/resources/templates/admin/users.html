@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Nutzer - Verwaltung</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
 </head>
 <body>
@@ -10,7 +11,10 @@
         <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
         <main class="admin-content">
             <div class="page-header">
-                <h1>Nutzer verwalten</h1>
+                <div style="display:flex;align-items:center;">
+                    <button type="button" class="hamburger-btn" onclick="toggleAdminSidebar()">&#9776;</button>
+                    <h1>Nutzer verwalten</h1>
+                </div>
                 <a th:href="@{/admin/vehicles}">Fahrzeugverwaltung</a>
                 <a th:href="@{/}">&rarr; Karte anzeigen</a>
             </div>

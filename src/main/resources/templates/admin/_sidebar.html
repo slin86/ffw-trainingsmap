@@ -18,4 +18,28 @@
     <div class="admin-sidebar-footer">
         <a th:href="@{/}">&larr; Karte anzeigen</a>
     </div>
+    
+    <script th:if="${pageHeaderSelector != null}">
+    (function() {
+        window.toggleAdminSidebar = function() {
+            var sidebar = document.querySelector('.admin-sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        };
+        
+        // Add wrapper to tables for horizontal scrolling on mobile
+        var tables = document.querySelectorAll('main.admin-content .container > table');
+        tables.forEach(function(table) {
+            if (!table.parentElement || table.parentElement.tagName !== 'DIV' || !table.parentElement.classList.contains('table-wrapper')) {
+                var wrapper = document.createElement('div');
+                wrapper.className = 'table-wrapper';
+                wrapper.style.overflowX = 'auto';
+                wrapper.style.webkitOverflowScrolling = 'touch';
+                wrapper.appendChild(table);
+                table.parentNode.insertBefore(wrapper, table);
+            }
+        });
+    })();
+    </script>
 </aside>

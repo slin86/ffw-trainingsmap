@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Feuerwachen - Verwaltung</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,7 +13,10 @@
         <aside th:replace="~{admin/_sidebar.html :: admin-sidebar}"></aside>
         <main class="admin-content">
             <div class="page-header">
-                <h1>Feuerwachen verwalten</h1>
+                <div style="display:flex;align-items:center;">
+                    <button type="button" class="hamburger-btn" onclick="toggleAdminSidebar()">&#9776;</button>
+                    <h1>Feuerwachen verwalten</h1>
+                </div>
                 <a th:href="@{/}">&larr; Karte anzeigen</a>
             </div>
             <div class="container">
