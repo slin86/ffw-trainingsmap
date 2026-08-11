@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: ghcr.io/slin86/ffw-trainingsmap:latest
+          image: ghcr.io/slin86/ffw-trainingsmap:0.4.0
           ports:
             - containerPort: 8080
               name: http
