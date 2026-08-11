@@ -713,4 +713,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Setup location map if element exists
     setupLatLngMap();
+
+    // Header click handler for desktop sidebar collapse
+    var header = document.getElementById('sidebarHeader');
+    if (header) {
+        header.addEventListener('click', function(e) {
+            // Only handle clicks that don't hit buttons
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'H2') {
+                toggleSidebar();
+            }
+        });
+    }
 });
