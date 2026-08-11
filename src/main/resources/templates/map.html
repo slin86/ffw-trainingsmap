@@ -15,8 +15,13 @@
         .header-right { display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
         .header a { color: #ffcdd2; text-decoration: none; }
         .header a:hover { color: #fff; }
-        .header button { background: transparent; border: 1px solid #ffcdd2; color: #ffcdd2; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+        header button { background: transparent; border: 1px solid #ffcdd2; color: #ffcdd2; padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
         .header button:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: #fff; }
+        #app-version {
+            color: #ffcdd2;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
         #map { flex: 1; }
 
         .status-btn { display: block; width: 100%; padding: 4px 8px; margin: 2px 0; border: 1px solid #ccc; border-radius: 4px; background: #fff; cursor: pointer; font-size: 0.9rem; color: #333; text-align: left; }
@@ -107,6 +112,7 @@
             <span th:if="${isAdmin}" style="display:none;"></span>
             <a th:if="${isAdmin}" href="/admin/vehicles">Verwaltung</a>
             <span>Angemeldet als <strong th:text="${username}"></strong></span>
+            <span id="app-version"></span>
             <form th:action="@{/logout}" method="post" style="margin:0">
                 <button type="submit">Abmelden</button>
             </form>

@@ -54,3 +54,11 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+val copyVersionFile by tasks.registering(Copy::class) {
+    from(rootProject.file("version.txt"))
+    into(layout.buildDirectory.dir("resources/main"))
+}
+tasks.named<ProcessResources>("processResources") {
+    dependsOn(copyVersionFile)
+}

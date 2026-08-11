@@ -669,6 +669,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // Get current user's check-in status on page load
     getMyCheckin();
 
+    // Fetch and display app version
+    fetch('/api/version')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            var versionSpan = document.getElementById('app-version');
+            if (versionSpan && data.version) {
+                versionSpan.textContent = 'v' + data.version;
+            }
+        })
+        .catch(function(err) {
+            console.error('Failed to fetch app version:', err);
+        });
+
     // Setup location map if element exists
     setupLatLngMap();
 });

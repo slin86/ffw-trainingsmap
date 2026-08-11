@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,10 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build -x test
+
+      - name: Read version
+        id: version
+        run: echo "value=$(cat version.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -39,3 +43,13 @@ jobs:
           tags: |
             ghcr.io/slin86/ffw-trainingsmap:${{ github.sha }}
             ghcr.io/slin86/ffw-trainingsmap:latest
+            ghcr.io/slin86/ffw-trainingsmap:${{ steps.version.outputs.value }}
+
+      - name: Update deployment.yaml
+        run: |
+          sed -i "s|ghcr.io/slin86/ffw-trainingsmap:.*|ghcr.io/slin86/ffw-trainingsmap:${{ steps.version.outputs.value }}|" deploy/deployment.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add deploy/deployment.yaml
+          git commit -m "chore: bump deployed version to ${{ steps.version.outputs.value }} [skip ci]" || echo "Nothing to commit"
+          git push

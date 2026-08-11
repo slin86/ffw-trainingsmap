@@ -181,7 +181,23 @@ Training-Tool fuer die Freiwillige Feuerwehr zur Darstellung von Fahrzeugen auf 
 - [x] `updateVehiclePositionFromGeolocation()`:Positionsaktualisierung an Server senden
 - [x] `stopLocationWatch()`: beim Auschecken Watch stoppen
 
+### M18: Versionsverwaltung (complete)
+
+- [x] `version.txt` im Repo-Root mit Inhalt `0.4.0`
+- [x] Gradle Task `processResources` und `bootJar`: version.txt in Jar-Klassenpfad kopieren
+- [x] `VersionController` REST-Endpoint `/api/version` (public, keine Auth-Pflicht)
+- [x] Version wird beim Serverstart einmalig gelesen via `getResourceAsStream("/version.txt")`
+- [x] map.html: `<span id="app-version"></span>` im Header hinzugefügt
+- [x] map.js: `fetch('/api/version')` beim Laden der Seite, Anzeige als "v0.4.0"
+- [x] CSS für version anpassen (kleine Schriftgroesse, Farbe #ffcdd2 wie Header-Links)
+- [x] GitHub Actions workflow build.yml erweitert:
+  - `contents: write` statt `read`
+  - Neuer Schritt "Read version" zur Extraktion der Version
+  - Version als Tag zu Docker-Publish hinzugefügt
+  - Neuer Schritt "Update deployment.yaml" zum automatischen Commit per Bot
+
 ## Noch offen
+
 
 - **Bewusste Nicht-Ziele:** Kein Echtzeit-Push (SSE/WebSockets) - das
   10s-Polling ist eine Architekturentscheidung. Kein MongoDB/Qdrant.
