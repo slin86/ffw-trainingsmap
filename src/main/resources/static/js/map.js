@@ -291,31 +291,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function createVehiclePopupContent(vehicle) {
-        var html = '<b>' + vehicle.callsign + '</b><br/>';
-        html += vehicle.type + '<br/>';
-        html += '<i>Status:</i> ' + (statusLabels[vehicle.status] || vehicle.status) + '<br/>';
-        html += '<i>Letzte Aktualisierung:</i> ' + formatUpdatedAt(vehicle.updatedAt);
+        var html = '<b>' + vehicle.callsign + '</b> ';
+        // html += vehicle.type + '<br/>';
+        // html += (statusLabels[vehicle.status] || vehicle.status);
+        html += ' (' + formatUpdatedAt(vehicle.updatedAt) + ')';
         html += '<hr/>';
-
-        var isMyCheckin = currentCheckinVehicleId === vehicle.id;
-        if (isMyCheckin) {
-            html += '<div class="checkin-info-checkedin">';
-            html += '✓ <b>Sie sind in diesem Fahrzeug eingecheckt</b><br/>';
-            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')" class="checkin-btn">Auschecken</button>';
-            html += '</div>';
-        } else {
-            if (currentCheckinVehicleId) {
-                html += '<div class="checkin-info-other">';
-                html += '⚠ <b>Sie sind in einem anderen Fahrzeug eingecheckt</b>';
-                html += '</div>';
-            }
-            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')" class="checkin-btn">Einchecken</button>';
-        }
 
         for (var i = 0; i < allStatusCodes.length; i++) {
             var code = allStatusCodes[i];
             var activeClass = vehicle.status === code ? ' status-active' : '';
-            html += '<button class="status-btn' + activeClass + '" onclick="window.changeMarkerStatus(' + vehicle.id + ', ' + code + ');" data-vehicle-id="' + vehicle.id + '" data-status="' + code + '">' + statusLabels[code] + '</button><br/>';
+            html += '<button class="status-btn' + activeClass + '" onclick="window.changeMarkerStatus(' + vehicle.id + ', ' + code + ');" data-vehicle-id="' + vehicle.id + '" data-status="' + code + '">' + statusLabels[code] + '</button>';
+        }
+
+        html += '<hr/>'
+
+        var isMyCheckin = currentCheckinVehicleId === vehicle.id;
+        if (isMyCheckin) {
+            html += '<div class="checkin-info-checkedin">';
+            html += '✓ <b>Checked in here.</b>';
+            html += '</div>';
+            html += '<button onclick="window.checkoutVehicle(' + vehicle.id + ')" class="checkin-btn">Check Out</button>';
+        } else {
+            if (currentCheckinVehicleId) {
+                html += '<div class="checkin-info-other">';
+                html += '⚠ <b>Checked in on other vehicle.</b>';
+                html += '</div>';
+            }
+            html += '<button onclick="window.checkinVehicle(' + vehicle.id + ')" class="checkin-btn">Check In</button>';
         }
 
         return html;
@@ -733,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-    
+
     window.openMobileSidebar = openMobileSidebar;
     window.closeMobileSidebar = closeMobileSidebar;
 });
